@@ -4,7 +4,7 @@ from execution import sandbox
 from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check
 
-def run_with_self_correlation(task_description: str, max_attempts: int = 3)->dict:
+def run_with_self_correction(task_description: str, max_attempts: int = 3)->dict:
     task=task_description
     history=[]
     for attempt in range(1,max_attempts+1):
@@ -42,15 +42,11 @@ Please fix the code and provide a corrected, complete script."""
     return {"success": False, "final_code": code, "attempts": max_attempts, "history": history}
 
 
-if __name__=="__main__":
-    result=run_with_self_correlation(
-        "Write a script that opens a file called 'data.txt' and prints its contents. The file does not exist, but handle that gracefully by printing 'File not found' instead of crashing."
+if __name__ == "__main__":
+    result = run_with_self_correction(
+        "Write a script that computes the factorial of 15 using recursion, "
+        "then divides 1000000 by (the factorial minus itself), and prints the result. "
+        "Handle any errors gracefully by printing 'Error: <description>' instead of crashing."
     )
     print("\n=== FINAL RESULT ===")
     print(f"Success: {result['success']}, Attempts used: {result['attempts']}")
-
-
-
-
-
-
