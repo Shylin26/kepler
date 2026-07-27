@@ -8,9 +8,9 @@ def basic_sanity_check(sandbox_result:dict)->dict:
     if not output.strip():
         return {"passed": False, "reason": "Script ran successfully but produced no output at all."}
     
-    error_keywords=["Traceback","Error","Exception"]
-    if any(keyword in output for keyword in error_keywords):
-        return {"passed": False, "reason": f"Output contains error-like text despite exit code 0: {output.strip()[:200]}"}
+    crash_signatures = ["Traceback (most recent call last)"]
+    if any(sig in output for sig in crash_signatures):
+        return {"passed": False, "reason": f"Output contains a raw traceback, indicating an unhandled crash: {output.strip()[:200]}"}
 
     return {"passed": True, "reason": "Passed basic sanity checks."}
 

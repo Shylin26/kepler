@@ -1,8 +1,6 @@
-from unittest import result
 from agents.coder.coder_agent import generate_code, strip_markdown_fences
-from execution import sandbox
 from execution.sandbox.executor import run_code_in_sandbox
-from agents.critic.critic_agent import basic_sanity_check
+from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 
 def run_with_self_correction(task_description: str, max_attempts: int = 3)->dict:
     task=task_description
@@ -18,6 +16,12 @@ def run_with_self_correction(task_description: str, max_attempts: int = 3)->dict
         print("--- SANDBOX RESULT ---")
         print(sandbox_result)
         verdict = basic_sanity_check(sandbox_result)
+        if verdict["passed"]:
+            verdict = task_adherence_check(
+                task_description=task_description,
+                code=code,
+                output=sandbox_result.get("output", ""),
+            )
         print("--- CRITIC VERDICT ---")
         print(verdict)
         history.append({
