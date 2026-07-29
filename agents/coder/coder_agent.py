@@ -15,12 +15,15 @@ Rules:
   the task seems to imply them. Use only built-in modules (e.g. random, math,
   statistics, itertools). If you need "arrays," use plain Python lists. If you
   need to show a comparison, print formatted text instead of plotting.
+- REPRODUCIBILITY: if the script uses any randomness (e.g. the `random` module),
+  it MUST call `random.seed(42)` (or another fixed integer) near the top of the
+  script, before generating any random data. Never leave randomness unseeded.
 """
 
     response = ollama.generate(model=model, prompt=prompt)
     return response["response"]
 
-import re
+
 
 def strip_markdown_fences(code: str) -> str:
     

@@ -1,6 +1,7 @@
 from agents.coder.coder_agent import generate_code, strip_markdown_fences
 from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
+from memory.trajectory_store.logger import log_trajectory
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     task_description = spec.task_description
@@ -56,6 +57,10 @@ if __name__ =="__main__":
     print(spec.model_dump_json(indent=2))
 
     result = run_with_self_correction(spec)
+    result = run_with_self_correction(spec)
+
+    filepath = log_trajectory(research_question, spec, result)
+    print(f"\n=== TRAJECTORY LOGGED TO: {filepath} ===")
 
     print("\n=== FINAL RESULT ===")
     print(f"Success: {result['success']}, Attempts used: {result['attempts']}")

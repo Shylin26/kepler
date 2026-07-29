@@ -1,0 +1,29 @@
+{
+  "timestamp_utc": "20260729T142840Z",
+  "research_question": "Does using a smaller batch size lead to noisier but faster-converging training loss?",
+  "experiment_spec": {
+    "hypothesis": "Using a smaller batch size leads to noisier but faster-converging training loss.",
+    "task_description": "Simulate 10 epochs of stochastic gradient descent on a simple quadratic function using both a small batch size (e.g., 2) and a large batch size (e.g., 10). Print the average loss per epoch for each batch size.",
+    "expected_outcome": "The smaller batch size should show more noisy but faster-converging training loss compared to the larger batch size, which should converge more smoothly.",
+    "success_criteria": "The script runs to completion and prints the average loss per epoch for both batch sizes.",
+    "compute_budget_seconds": 60,
+    "notes": null
+  },
+  "success": true,
+  "attempts_used": 1,
+  "final_code": "import random\n\ndef quadratic_function(x):\n    return x**2 + 5*x + 6\n\ndef gradient_quadratic_function(x):\n    return 2*x + 5\n\ndef stochastic_gradient_descent(batch_size, epochs=10, learning_rate=0.1):\n    x = random.uniform(-10, 10)\n    losses = []\n    \n    for epoch in range(epochs):\n        batch_losses = []\n        for _ in range(batch_size):\n            sample_x = random.uniform(-10, 10)\n            sample_loss = quadratic_function(sample_x)\n            gradient = gradient_quadratic_function(sample_x)\n            x -= learning_rate * gradient\n            batch_losses.append(sample_loss)\n        \n        avg_loss = sum(batch_losses) / len(batch_losses)\n        losses.append(avg_loss)\n    \n    return losses\n\nrandom.seed(42)\n\nsmall_batch_size = 2\nlarge_batch_size = 10\n\nsmall_batch_losses = stochastic_gradient_descent(small_batch_size)\nlarge_batch_losses = stochastic_gradient_descent(large_batch_size)\n\nprint(f\"Average loss per epoch with small batch size: {small_batch_losses}\")\nprint(f\"Average loss per epoch with large batch size: {large_batch_losses}\")",
+  "history": [
+    {
+      "attempt": 1,
+      "code": "import random\n\ndef quadratic_function(x):\n    return x**2 + 5*x + 6\n\ndef gradient_quadratic_function(x):\n    return 2*x + 5\n\ndef stochastic_gradient_descent(batch_size, epochs=10, learning_rate=0.1):\n    x = random.uniform(-10, 10)\n    losses = []\n    \n    for epoch in range(epochs):\n        batch_losses = []\n        for _ in range(batch_size):\n            sample_x = random.uniform(-10, 10)\n            sample_loss = quadratic_function(sample_x)\n            gradient = gradient_quadratic_function(sample_x)\n            x -= learning_rate * gradient\n            batch_losses.append(sample_loss)\n        \n        avg_loss = sum(batch_losses) / len(batch_losses)\n        losses.append(avg_loss)\n    \n    return losses\n\nrandom.seed(42)\n\nsmall_batch_size = 2\nlarge_batch_size = 10\n\nsmall_batch_losses = stochastic_gradient_descent(small_batch_size)\nlarge_batch_losses = stochastic_gradient_descent(large_batch_size)\n\nprint(f\"Average loss per epoch with small batch size: {small_batch_losses}\")\nprint(f\"Average loss per epoch with large batch size: {large_batch_losses}\")",
+      "sandbox_result": {
+        "exit_code": 0,
+        "output": "Average loss per epoch with small batch size: [26.247321729110173, 30.490283736506115, 71.44945719252364, 16.786178661896116, 28.472808526241273, 27.43393631213516, 21.068925489792765, 10.303741628956045, 46.677920995223175, 64.02967837371756]\nAverage loss per epoch with large batch size: [45.15356038318466, 46.777299573877414, 12.40199181440028, 44.39450931327934, 40.23034721580794, 28.076536498021863, 42.55428328556489, 60.779681557698325, 34.96022881705524, 37.578774978215634]\n"
+      },
+      "verdict": {
+        "passed": true,
+        "reason": "The task does not describe any guaranteed error conditions that should be triggered and handled. The code provided correctly simulates stochastic gradient descent with both small and large batch sizes without attempting to avoid any guaranteed errors."
+      }
+    }
+  ]
+}
