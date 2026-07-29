@@ -2,8 +2,9 @@ from agents.coder.coder_agent import generate_code, strip_markdown_fences
 from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 
-def run_with_self_correction(task_description: str, max_attempts: int = 3)->dict:
-    task=task_description
+def run_with_self_correction(spec, max_attempts: int = 3)->dict:
+    task_description = spec.task_description
+    task = task_description
     history=[]
     for attempt in range(1,max_attempts+1):
         print(f"\n=== Attempt {attempt} ===")
@@ -46,11 +47,15 @@ Please fix the code and provide a corrected, complete script."""
     return {"success": False, "final_code": code, "attempts": max_attempts, "history": history}
 
 
-if __name__ == "__main__":
-    result = run_with_self_correction(
-        "Write a script that computes the factorial of 15 using recursion, "
-        "then divides 1000000 by (the factorial minus itself), and prints the result. "
-        "Handle any errors gracefully by printing 'Error: <description>' instead of crashing."
-    )
+if __name__ =="__main__":
+    from agents.planner.planner_agent import plan_experiment
+    research_question = "Does using a smaller batch size lead to noisier but faster-converging training loss?"
+
+    print("=== PLANNING EXPERIMENT ===")
+    spec = plan_experiment(research_question)
+    print(spec.model_dump_json(indent=2))
+
+    result = run_with_self_correction(spec)
+
     print("\n=== FINAL RESULT ===")
     print(f"Success: {result['success']}, Attempts used: {result['attempts']}")
