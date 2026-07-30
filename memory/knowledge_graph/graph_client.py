@@ -12,8 +12,13 @@ def run_write_query(query: str, parameters: dict = None) -> list:
         result = session.run(query, parameters or {})
         return [record.data() for record in result]
 
-def create_hypothesis(text: str) -> str:
-    """Create a Hypothesis node and return its internal Neo4j id."""
+def find_or_create_hypothesis(text: str) -> str:
+    """Return the existing Hypothesis's id if one with this exact text
+    already exists; otherwise create a new one and return its id."""
+    existing_id = find_hypothesis_by_text(text)
+    if existing_id:
+        return existing_id
+
     query = """
     CREATE (h:Hypothesis {text: $text, status: 'open'})
     RETURN elementId(h) AS id
@@ -37,6 +42,19 @@ def log_run_to_graph(hypothesis_id: str, success: bool, attempts: int, trajector
         "trajectory_filepath": trajectory_filepath,
     })
     return result[0]["id"]
+
+def find_hypothesis_by_text(text: str) -> str | None:
+    """Return the elementId of an existing Hypothesis with this exact text,
+    or None if no match exists."""
+    query = """
+    MATCH (h:Hypothesis {text: $text})
+    RETURN elementId(h) AS id
+    LIMIT 1
+    """
+    result = run_write_query(query, {"text": text})
+    if result:
+        return result[0]["id"]
+    return None
 
 if __name__ == "__main__":
     hyp_id = create_hypothesis("Using a smaller batch size leads to noisier but faster-converging training loss.")

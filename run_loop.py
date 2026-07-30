@@ -2,7 +2,8 @@ from agents.coder.coder_agent import generate_code, strip_markdown_fences
 from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 from memory.trajectory_store.logger import log_trajectory
-from memory.knowledge_graph.graph_client import create_hypothesis, log_run_to_graph
+from memory.knowledge_graph.graph_client import find_or_create_hypothesis, log_run_to_graph
+
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     task_description = spec.task_description
@@ -49,11 +50,13 @@ Please fix the code and provide a corrected, complete script."""
     return {"success": False, "final_code": code, "attempts": max_attempts, "history": history}
 
 
+
+
 if __name__ == "__main__":
     from agents.planner.planner_agent import plan_experiment
     research_question = "Does using a smaller batch size lead to noisier but faster-converging training loss?"
 
-    hypothesis_id = create_hypothesis(research_question)
+    hypothesis_id = find_or_create_hypothesis(research_question)
     print(f"=== HYPOTHESIS CREATED IN GRAPH: {hypothesis_id} ===")
 
     print("=== PLANNING EXPERIMENT ===")
