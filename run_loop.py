@@ -2,6 +2,7 @@ from agents.coder.coder_agent import generate_code, strip_markdown_fences
 from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 from memory.trajectory_store.logger import log_trajectory
+from memory.knowledge_graph.graph_client import create_hypothesis, log_run_to_graph
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     task_description = spec.task_description
@@ -48,19 +49,29 @@ Please fix the code and provide a corrected, complete script."""
     return {"success": False, "final_code": code, "attempts": max_attempts, "history": history}
 
 
-if __name__ =="__main__":
+if __name__ == "__main__":
     from agents.planner.planner_agent import plan_experiment
     research_question = "Does using a smaller batch size lead to noisier but faster-converging training loss?"
+
+    hypothesis_id = create_hypothesis(research_question)
+    print(f"=== HYPOTHESIS CREATED IN GRAPH: {hypothesis_id} ===")
 
     print("=== PLANNING EXPERIMENT ===")
     spec = plan_experiment(research_question)
     print(spec.model_dump_json(indent=2))
 
     result = run_with_self_correction(spec)
-    result = run_with_self_correction(spec)
 
     filepath = log_trajectory(research_question, spec, result)
     print(f"\n=== TRAJECTORY LOGGED TO: {filepath} ===")
+
+    run_id = log_run_to_graph(
+        hypothesis_id=hypothesis_id,
+        success=result["success"],
+        attempts=result["attempts"],
+        trajectory_filepath=filepath,
+    )
+    print(f"=== RUN LOGGED TO GRAPH: {run_id} (linked to hypothesis {hypothesis_id}) ===")
 
     print("\n=== FINAL RESULT ===")
     print(f"Success: {result['success']}, Attempts used: {result['attempts']}")
