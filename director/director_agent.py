@@ -1,6 +1,6 @@
 import ollama
 import json
-from memory.knowledge_graph.graph_client import run_write_query
+from memory.knowledge_graph.graph_client import run_write_query, get_covered_topic_areas
 
 def get_existing_hypotheses() -> list[str]:
     """Return the text of every Hypothesis currently in the knowledge graph."""
@@ -10,6 +10,32 @@ def get_existing_hypotheses() -> list[str]:
     """
     results = run_write_query(query)
     return [r["text"] for r in results]
+
+def propose_topic_area(model: str = "qwen2.5-coder:7b") -> str:
+    """Ask an LLM to propose a broad topic area to research next, distinct
+    from areas already covered by existing hypotheses in the graph."""
+
+    covered = get_covered_topic_areas()
+    covered_list = "\n".join(f"- {t}" for t in covered) if covered else "(none yet)"
+
+    prompt = f"""You are a research director for a small-scale ML experimentation system.
+Your job right now is NOT to write a specific research question -- only to name
+a broad TOPIC AREA to focus on next (e.g. "learning rate scheduling",
+"weight initialization strategies", "optimizer choice", "regularization").
+
+Topic areas must be small-scale-experiment-friendly: testable on a single CPU,
+under a minute, with synthetic data, no third-party packages.
+
+These EXACT topic areas have already been covered -- you MUST propose something
+different from all of these:
+{covered_list}
+
+Respond with ONLY the topic area as a short phrase (3-6 words), nothing else.
+No preamble, no explanation, no quotes.
+"""
+
+    response = ollama.generate(model=model, prompt=prompt)
+    return response["response"].strip()
 
 def propose_next_research_question(topic_area: str, model: str = "qwen2.5-coder:7b") -> str:
     """Ask an LLM to propose a new research question in the given topic area,
@@ -38,6 +64,8 @@ No preamble, no explanation, no quotes around it.
     return response["response"].strip()
 
 if __name__ == "__main__":
-    question = propose_next_research_question("learning rate and convergence behavior")
-    print("=== PROPOSED RESEARCH QUESTION ===")
-    print(question)
+    topic = propose_topic_area()
+    print(f"=== PROPOSED TOPIC AREA: {topic} ===")
+
+    question = propose_next_research_question(topic)
+    print(f"=== PROPOSED RESEARCH QUESTION: {question} ===")

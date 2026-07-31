@@ -3,7 +3,7 @@ from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 from memory.trajectory_store.logger import log_trajectory
 from memory.knowledge_graph.graph_client import find_or_create_hypothesis, log_run_to_graph
-from director.director_agent import propose_next_research_question
+from director.director_agent import propose_next_research_question, propose_topic_area
 
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
@@ -56,11 +56,14 @@ Please fix the code and provide a corrected, complete script."""
 if __name__ == "__main__":
     from agents.planner.planner_agent import plan_experiment
 
-    topic_area = "learning rate and convergence behavior"
+    from director.director_agent import propose_topic_area
+    topic_area = propose_topic_area()
+    print(f"=== DIRECTOR PROPOSED TOPIC AREA: {topic_area} ===")
+
     research_question = propose_next_research_question(topic_area)
-    print(f"=== DIRECTOR PROPOSED: {research_question} ===")
+    print(f"=== DIRECTOR PROPOSED QUESTION: {research_question} ===")
     
-    hypothesis_id = find_or_create_hypothesis(research_question)
+    hypothesis_id = find_or_create_hypothesis(research_question, topic_area=topic_area)
     print(f"=== HYPOTHESIS CREATED IN GRAPH: {hypothesis_id} ===")
 
     print("=== PLANNING EXPERIMENT ===")

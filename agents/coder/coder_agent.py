@@ -24,7 +24,7 @@ Rules:
   values may never cross the threshold exactly. Never write an unbounded loop.
 """
 
-    response = ollama.generate(model=model, prompt=prompt)
+    response = ollama.generate(model=model, prompt=prompt, options={"temperature": 0.7})
     return response["response"]
 
 

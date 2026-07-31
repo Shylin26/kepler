@@ -12,18 +12,19 @@ def run_write_query(query: str, parameters: dict = None) -> list:
         result = session.run(query, parameters or {})
         return [record.data() for record in result]
 
-def find_or_create_hypothesis(text: str) -> str:
+def find_or_create_hypothesis(text: str, topic_area: str = "unspecified") -> str:
     """Return the existing Hypothesis's id if one with this exact text
-    already exists; otherwise create a new one and return its id."""
+    already exists; otherwise create a new one (tagged with its topic area)
+    and return its id."""
     existing_id = find_hypothesis_by_text(text)
     if existing_id:
         return existing_id
 
     query = """
-    CREATE (h:Hypothesis {text: $text, status: 'open'})
+    CREATE (h:Hypothesis {text: $text, status: 'open', topic_area: $topic_area})
     RETURN elementId(h) AS id
     """
-    result = run_write_query(query, {"text": text})
+    result = run_write_query(query, {"text": text, "topic_area": topic_area})
     return result[0]["id"]
 
 def log_run_to_graph(hypothesis_id: str, success: bool, attempts: int, trajectory_filepath: str) -> str:
@@ -55,6 +56,16 @@ def find_hypothesis_by_text(text: str) -> str | None:
     if result:
         return result[0]["id"]
     return None
+
+def get_covered_topic_areas() -> list[str]:
+    """Return the distinct topic_area values already present in the graph."""
+    query = """
+    MATCH (h:Hypothesis)
+    WHERE h.topic_area IS NOT NULL
+    RETURN DISTINCT h.topic_area AS topic_area
+    """
+    results = run_write_query(query)
+    return [r["topic_area"] for r in results]
 
 if __name__ == "__main__":
     hyp_id = create_hypothesis("Using a smaller batch size leads to noisier but faster-converging training loss.")
