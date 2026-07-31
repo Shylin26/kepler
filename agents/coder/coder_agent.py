@@ -18,6 +18,10 @@ Rules:
 - REPRODUCIBILITY: if the script uses any randomness (e.g. the `random` module),
   it MUST call `random.seed(42)` (or another fixed integer) near the top of the
   script, before generating any random data. Never leave randomness unseeded.
+- SAFETY: any loop whose exit condition depends on a numeric threshold (e.g.
+  "while error > tolerance") MUST also include a hard maximum iteration count
+  (e.g. `max_iterations = 10000`) as a backup exit condition, since floating-point
+  values may never cross the threshold exactly. Never write an unbounded loop.
 """
 
     response = ollama.generate(model=model, prompt=prompt)

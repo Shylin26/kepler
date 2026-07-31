@@ -3,6 +3,7 @@ from execution.sandbox.executor import run_code_in_sandbox
 from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 from memory.trajectory_store.logger import log_trajectory
 from memory.knowledge_graph.graph_client import find_or_create_hypothesis, log_run_to_graph
+from director.director_agent import propose_next_research_question
 
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
@@ -16,7 +17,7 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
         code=strip_markdown_fences(raw)
         print("--- CODE ---")
         print(code)
-        sandbox_result=run_code_in_sandbox(code)
+        sandbox_result = run_code_in_sandbox(code, timeout=spec.compute_budget_seconds)
         print("--- SANDBOX RESULT ---")
         print(sandbox_result)
         verdict = basic_sanity_check(sandbox_result)
@@ -54,8 +55,11 @@ Please fix the code and provide a corrected, complete script."""
 
 if __name__ == "__main__":
     from agents.planner.planner_agent import plan_experiment
-    research_question = "Does using a smaller batch size lead to noisier but faster-converging training loss?"
 
+    topic_area = "learning rate and convergence behavior"
+    research_question = propose_next_research_question(topic_area)
+    print(f"=== DIRECTOR PROPOSED: {research_question} ===")
+    
     hypothesis_id = find_or_create_hypothesis(research_question)
     print(f"=== HYPOTHESIS CREATED IN GRAPH: {hypothesis_id} ===")
 
