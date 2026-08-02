@@ -36,6 +36,15 @@ def strip_markdown_fences(code: str) -> str:
         return match.group(1).strip()
     return code.strip()
 
+def check_syntax(code: str) -> dict:
+    """Check whether code is syntactically valid Python, without executing it.
+    Returns {"valid": bool, "error": str or None}."""
+    try:
+        compile(code, "<string>", "exec")
+        return {"valid": True, "error": None}
+    except SyntaxError as e:
+        return {"valid": False, "error": f"SyntaxError: {e.msg} (line {e.lineno})"}
+
 if __name__ =="__main__":
     from execution.sandbox.executor import run_code_in_sandbox
     raw=generate_code("Print the first 10 fibbonacci numbers.")

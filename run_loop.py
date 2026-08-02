@@ -5,6 +5,7 @@ from agents.critic.critic_agent import basic_sanity_check, task_adherence_check
 from memory.trajectory_store.logger import log_trajectory
 from memory.knowledge_graph.graph_client import find_or_create_hypothesis, log_run_to_graph
 from director.director_agent import propose_next_research_question, propose_topic_area
+from agents.coder.coder_agent import generate_code, strip_markdown_fences, check_syntax
 
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
@@ -14,10 +15,18 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     for attempt in range(1,max_attempts+1):
         print(f"\n=== Attempt {attempt} ===")
 
-        raw=generate_code(task)
-        code=strip_markdown_fences(raw)
+        raw = generate_code(task)
+        code = strip_markdown_fences(raw)
         print("--- CODE ---")
         print(code)
+
+        syntax_check = check_syntax(code)
+        if not syntax_check["valid"]:
+            print("--- SYNTAX CHECK FAILED (skipped sandbox run) ---")
+            print(syntax_check["error"])
+            sandbox_result = {"exit_code": 1, "output": syntax_check["error"]}
+        else:
+            sandbox_result = run_code_in_sandbox(code, timeout=spec.compute_budget_seconds)
         sandbox_result = run_code_in_sandbox(code, timeout=spec.compute_budget_seconds)
         print("--- SANDBOX RESULT ---")
         print(sandbox_result)
