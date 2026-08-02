@@ -6,6 +6,7 @@ from memory.trajectory_store.logger import log_trajectory
 from memory.knowledge_graph.graph_client import find_or_create_hypothesis, log_run_to_graph
 from director.director_agent import propose_next_research_question, propose_topic_area
 from agents.coder.coder_agent import generate_code, strip_markdown_fences, check_syntax
+from agents.analyst.analyst_agent import analyze_result
 
 
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
@@ -77,6 +78,14 @@ def run_multiple_experiments(specs: list, hypothesis_id: str, research_question:
 
     logged_results = []
     for spec, result in zip(specs, results):
+        analysis = None
+        if result["success"]:
+            last_attempt = result["history"][-1]
+            output = last_attempt["sandbox_result"].get("output", "")
+            analysis = analyze_result(spec.hypothesis, spec.expected_outcome, output)
+            print(f"--- ANALYST VERDICT: {analysis['verdict']} ---")
+            print(f"    {analysis['reasoning']}")
+
         filepath = log_trajectory(research_question, spec, result)
         run_id = log_run_to_graph(
             hypothesis_id=hypothesis_id,
@@ -84,9 +93,12 @@ def run_multiple_experiments(specs: list, hypothesis_id: str, research_question:
             attempts=result["attempts"],
             trajectory_filepath=filepath,
         )
-        logged_results.append({"spec": spec, "result": result, "run_id": run_id, "filepath": filepath})
+        logged_results.append({
+            "spec": spec, "result": result, "run_id": run_id,
+            "filepath": filepath, "analysis": analysis,
+        })
 
-    return logged_results
+    return logged_results 
 
 
 if __name__ == "__main__":
