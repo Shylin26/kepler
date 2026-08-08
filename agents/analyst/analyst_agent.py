@@ -54,18 +54,30 @@ Respond with ONLY a JSON object in this exact format:
         return {"verdict": verdict, "reasoning": reasoning, "supporting_quote": quote}
     except (ValueError, json.JSONDecodeError):
         return {"verdict": "inconclusive", "reasoning": f"Could not parse analyst response: {raw[:200]}"}
+def _normalize_for_grounding(text: str) -> str:
+    """Narrow, explicit normalization for grounding comparison ONLY -- not
+    used anywhere else. Deliberately does NOT touch numeric formatting
+    (e.g. 0.57 vs 0.570 are left distinct) since collapsing numeric
+    precision could mask a real discrepancy. Only handles whitespace/
+    line-break variance and a small set of trailing punctuation that
+    LLMs commonly add when copying a quote."""
+    text = text.strip().lower()
+    text = re.sub(r"\s+", " ", text)          # collapse all whitespace/newlines to single space
+    text = text.rstrip(".,%")                  # strip a small explicit set of trailing punctuation
+    return text
+
 def check_grounding(supporting_quote: str, output: str) -> dict:
-    """Verify that the Analyst's supporting_quote is an exact substring of
-    the real experiment output -- not paraphrased, not invented."""
+    """Verify that the Analyst's supporting_quote is a (normalized) exact
+    substring of the real experiment output -- not paraphrased, not
+    invented. See _normalize_for_grounding for exactly what counts as
+    'the same' -- deliberately narrow, not fuzzy matching."""
     quote_clean = supporting_quote.strip()
     if not quote_clean:
         return {"grounded": False, "reason": "No supporting quote provided."}
-
-    if quote_clean in output:
+    if _normalize_for_grounding(quote_clean) in _normalize_for_grounding(output):
         return {"grounded": True, "reason": None}
-
-    return {"grounded": False, "reason": f"Quote not found verbatim in output: '{quote_clean[:100]}'"}
-
+    return {"grounded": False, "reason": f"Quote not found verbatim (even after normalization) in output: '{quote_clean[:100]}'"}
+    
 if __name__ == "__main__":
     result = analyze_result(
         hypothesis="Adversarial training improves model robustness compared to standard training.",
