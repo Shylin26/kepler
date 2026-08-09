@@ -28,7 +28,6 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
             sandbox_result = {"exit_code": 1, "output": syntax_check["error"]}
         else:
             sandbox_result = run_code_in_sandbox(code, timeout=spec.compute_budget_seconds)
-        sandbox_result = run_code_in_sandbox(code, timeout=spec.compute_budget_seconds)
         print("--- SANDBOX RESULT ---")
         print(sandbox_result)
         verdict = basic_sanity_check(sandbox_result)
