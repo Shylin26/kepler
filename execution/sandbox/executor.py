@@ -1,4 +1,5 @@
 import docker
+import time
 
 def run_code_in_sandbox(code:str,timeout:int=30)->dict:
     client=docker.from_env()
@@ -11,6 +12,7 @@ def run_code_in_sandbox(code:str,timeout:int=30)->dict:
         cpu_period=100000,
         cpu_quota=50000,
     )
+    start = time.monotonic()
     try:
         result=container.wait(timeout=timeout)
         exit_code=result["StatusCode"]
@@ -20,5 +22,6 @@ def run_code_in_sandbox(code:str,timeout:int=30)->dict:
         logs = f"Container did not finish in time or errored: {e}"
         container.kill()
     finally:
+        duration_seconds = time.monotonic() - start
         container.remove(force=True)
-    return {"exit_code": exit_code, "output": logs}
+    return {"exit_code": exit_code, "output": logs, "duration_seconds": round(duration_seconds, 3)}
