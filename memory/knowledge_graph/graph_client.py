@@ -27,12 +27,12 @@ def find_or_create_hypothesis(text: str, topic_area: str = "unspecified") -> str
     result = run_write_query(query, {"text": text, "topic_area": topic_area})
     return result[0]["id"]
 
-def log_run_to_graph(hypothesis_id: str, success: bool, attempts: int, trajectory_filepath: str) -> str:
+def log_run_to_graph(hypothesis_id: str, success: bool, attempts: int, trajectory_filepath: str, total_sandbox_seconds: float = 0.0) -> str:
     """Create a Run node, link it to an existing Hypothesis via TESTS, and
     return the Run node's internal id."""
     query = """
     MATCH (h:Hypothesis) WHERE elementId(h) = $hypothesis_id
-    CREATE (r:Run {success: $success, attempts: $attempts, trajectory_file: $trajectory_filepath})
+    CREATE (r:Run {success: $success, attempts: $attempts, trajectory_file: $trajectory_filepath, total_sandbox_seconds: $total_sandbox_seconds})
     CREATE (r)-[:TESTS]->(h)
     RETURN elementId(r) AS id
     """
@@ -41,9 +41,10 @@ def log_run_to_graph(hypothesis_id: str, success: bool, attempts: int, trajector
         "success": success,
         "attempts": attempts,
         "trajectory_filepath": trajectory_filepath,
+        "total_sandbox_seconds": total_sandbox_seconds,
     })
     return result[0]["id"]
-
+    
 def find_hypothesis_by_text(text: str) -> str | None:
     """Return the elementId of an existing Hypothesis with this exact text,
     or None if no match exists."""
@@ -66,6 +67,7 @@ def get_covered_topic_areas() -> list[str]:
     """
     results = run_write_query(query)
     return [r["topic_area"] for r in results]
+
 
 if __name__ == "__main__":
     hyp_id = create_hypothesis("Using a smaller batch size leads to noisier but faster-converging training loss.")

@@ -13,6 +13,7 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     task_description = spec.task_description
     task = task_description
     history=[]
+    total_sandbox_seconds = 0.0
     for attempt in range(1,max_attempts+1):
         print(f"\n=== Attempt {attempt} ===")
 
@@ -30,6 +31,8 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
             sandbox_result = run_code_in_sandbox(code, timeout=spec.compute_budget_seconds)
         print("--- SANDBOX RESULT ---")
         print(sandbox_result)
+        total_sandbox_seconds += sandbox_result.get("duration_seconds", 0)
+
         verdict = basic_sanity_check(sandbox_result)
         if verdict["passed"]:
             verdict = task_adherence_check(
@@ -47,7 +50,7 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
 
         })
         if verdict["passed"]:
-            return {"success": True, "final_code": code, "attempts": attempt, "history": history}
+            return {"success": True, "final_code": code, "attempts": attempt, "history": history, "total_sandbox_seconds": round(total_sandbox_seconds, 3)}
 
         task = f"""{task_description}
 Your previous attempt failed. Here is the code you wrote:
@@ -58,7 +61,7 @@ Here is why it failed:
 
 Please fix the code and provide a corrected, complete script."""
 
-    return {"success": False, "final_code": code, "attempts": max_attempts, "history": history}
+    return {"success": False, "final_code": code, "attempts": max_attempts, "history": history, "total_sandbox_seconds": round(total_sandbox_seconds, 3)}
 
 @ray.remote
 def run_with_self_correction_remote(spec, max_attempts: int = 3) -> dict:
@@ -91,6 +94,7 @@ def run_multiple_experiments(specs: list, hypothesis_id: str, research_question:
             success=result["success"],
             attempts=result["attempts"],
             trajectory_filepath=filepath,
+            total_sandbox_seconds=result.get("total_sandbox_seconds", 0.0),
         )
         logged_results.append({
             "spec": spec, "result": result, "run_id": run_id,
