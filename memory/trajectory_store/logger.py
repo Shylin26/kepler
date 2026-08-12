@@ -16,6 +16,7 @@ def log_trajectory(research_question: str, spec, loop_result: dict) -> str:
         "history": loop_result["history"],
         "total_sandbox_seconds": loop_result.get("total_sandbox_seconds", 0.0),
         "compute_budget_seconds": spec.compute_budget_seconds,
+        "budget_exceeded": loop_result.get("budget_exceeded", False),
     }
     with open(filename, "w") as f:
         json.dump(record, f, indent=2)
