@@ -50,8 +50,15 @@ Respond with ONLY a JSON object in this exact format:
                 "verdict": "inconclusive",
                 "reasoning": f"[DOWNGRADED: {grounding['reason']}] Original reasoning: {reasoning}",
             }
-
-        return {"verdict": verdict, "reasoning": reasoning, "supporting_quote": quote}
+        direction_check = check_numeric_direction(reasoning)
+        if direction_check["checked"] and not direction_check["consistent"]:
+            print(f"--- WARNING: possible numeric direction inconsistency in Analyst reasoning: {direction_check['reason']} ---")
+        return {
+            "verdict": verdict,
+            "reasoning": reasoning,
+            "supporting_quote": quote,
+            "direction_check": direction_check,
+        }
     except (ValueError, json.JSONDecodeError):
         return {"verdict": "inconclusive", "reasoning": f"Could not parse analyst response: {raw[:200]}"}
 def _normalize_for_grounding(text: str) -> str:
@@ -77,7 +84,49 @@ def check_grounding(supporting_quote: str, output: str) -> dict:
     if _normalize_for_grounding(quote_clean) in _normalize_for_grounding(output):
         return {"grounded": True, "reason": None}
     return {"grounded": False, "reason": f"Quote not found verbatim (even after normalization) in output: '{quote_clean[:100]}'"}
-    
+
+def check_numeric_direction(reasoning: str) -> dict:
+    """Heuristic check: if reasoning text contains an explicit numeric
+    comparison (two numbers with a directional word like higher/lower/
+    more/less/greater/smaller between them), verify the claimed direction
+    matches the actual arithmetic relationship between the first two
+    numbers found.
+
+    Deliberately narrow -- built to catch the exact failure pattern seen
+    in issue #13 (claiming a lower number is 'higher'), not a general
+    logic checker. Does NOT catch cherry-picking (see #13 B2) or
+    self-contradictory reasoning using both directional word types.
+    Returns checked=False when there's nothing clear to check -- that is
+    NOT the same as confirming the reasoning is correct.
+    """
+    HIGHER_WORDS = ["higher", "greater", "more", "increase", "improved", "better", "exceeds"]
+    LOWER_WORDS = ["lower", "smaller", "less", "decrease", "worse", "below", "reduced"]
+
+    numbers = [float(m) for m in re.findall(r"-?\d+\.?\d*", reasoning)]
+    if len(numbers) < 2:
+        return {"checked": False, "reason": "Fewer than 2 numbers found in reasoning."}
+
+    text_lower = reasoning.lower()
+    found_higher = any(w in text_lower for w in HIGHER_WORDS)
+    found_lower = any(w in text_lower for w in LOWER_WORDS)
+
+    if found_higher and found_lower:
+        return {"checked": False, "reason": "Both higher- and lower-direction words present -- ambiguous, skipping."}
+    if not found_higher and not found_lower:
+        return {"checked": False, "reason": "No clear directional comparison word found."}
+
+    a, b = numbers[0], numbers[1]
+    if a == b:
+        return {"checked": False, "reason": f"First two numbers ({a}, {b}) are equal -- no direction to check."}
+
+    actual_direction = "higher" if a > b else "lower"
+    claimed_direction = "higher" if found_higher else "lower"
+    consistent = actual_direction == claimed_direction
+    return {
+        "checked": True,
+        "consistent": consistent,
+        "reason": None if consistent else f"Reasoning claims '{claimed_direction}' but first two numbers found ({a} then {b}) are actually {actual_direction} in that order.",
+    }  
 if __name__ == "__main__":
     result = analyze_result(
         hypothesis="Adversarial training improves model robustness compared to standard training.",
