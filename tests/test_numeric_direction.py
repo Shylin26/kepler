@@ -12,6 +12,7 @@ cases = [
     ("correct run 4", "The adversarial model shows a lower accuracy under perturbation (0.89) compared to the standard model (0.91), refuting the hypothesis that adversarial training improves model robustness.", "consistent"),
     ("correct run 5", "The adversarial model under perturbation shows a slightly lower accuracy (0.89) compared to the standard model (0.91), which suggests that it may not improve model robustness as expected.", "consistent"),
     ("self-contradictory run (2nd B1 batch)", "The adversarial model shows lower accuracy under perturbation (0.89) compared to standard training (0.91), indicating it performs better and is more robust against small perturbations.", "UNKNOWN — testing the stated limitation"),
+    ("B2 cherry-pick (known blind spot)", "The new optimizer consistently reaches target loss in fewer steps than the baseline optimizer across all seeds.", "EXPECTED: NOT CHECKED (no numbers cited at all)"),
 ]
 
 for label, reasoning, expected in cases:
