@@ -182,3 +182,141 @@ previously 1, defeating the skip); valid syntax -> 1 sandbox call
 Relevant context: this was caught specifically because we were about to
 build cost/budget tracking on top of this function -- would have been
 tracking double the real cost per attempt if we hadn't caught it first.
+
+## 2026-08-09 — Cost/duration tracking wired end-to-end
+
+Added real wall-clock duration tracking, from the sandbox up through the
+knowledge graph:
+
+- execution/sandbox/executor.py: run_code_in_sandbox now measures actual
+  container run time (time.monotonic(), around container.wait()) and
+  returns it as duration_seconds. Verified against a real Docker call
+  with a deliberate time.sleep(2) -- measured 2.289s, plausible.
+- run_loop.py: run_with_self_correction sums duration_seconds across all
+  attempts into total_sandbox_seconds (uses .get(..., 0) since a
+  syntax-check-failure attempt never touches the sandbox and has no
+  duration_seconds key at all).
+- memory/trajectory_store/logger.py: persists total_sandbox_seconds and
+  the original compute_budget_seconds side by side in the trajectory JSON.
+- memory/knowledge_graph/graph_client.py: log_run_to_graph gained a new
+  total_sandbox_seconds parameter (default 0.0, backward compatible),
+  written onto the Run node so it's queryable directly from Cypher.
+
+Verified end-to-end with a real python run_loop.py pipeline run (Director
+-> Planner -> 3x Ray-parallel experiments -> graph). Confirmed via Cypher
+query against the exact Run node IDs from that run:
+  Run :46 -- 3 attempts, failed -- 0.767s
+  Run :47 -- 3 attempts, failed -- 2.405s
+  Run :48 -- 3 attempts, failed -- 1.015s
+
+Minor note for future self: first verification attempt gave false NULLs
+-- turned out to be two separate causes, not one. (1) queried before the
+new pipeline run had actually executed, so pulled pre-fix nodes. (2) even
+after re-running, ORDER BY elementId(r) DESC sorts elementId as a STRING,
+not numerically -- so it surfaced old single/double-digit-suffix nodes
+instead of the new ones. Fixed by querying exact known IDs instead of
+trusting sort order. Worth remembering for any future Neo4j debugging:
+elementId is not safe to sort on numerically.
+
+Still not done: nothing currently compares total_sandbox_seconds against
+spec.compute_budget_seconds to flag/act on overruns -- this only tracks
+spend, doesn't enforce or alert on it yet. Also doesn't yet track LLM
+API/token cost, only sandbox wall-clock time. Both reasonable next steps
+if we come back to budget tracking.
+
+
+## 2026-08-11 — budget_exceeded flag added (tracking, not enforcement)
+
+Investigated whether compute_budget_seconds is a per-attempt or total
+budget. Turns out it's passed as the Docker timeout on EVERY attempt in
+run_with_self_correction -- so a 3-attempt retry loop can legitimately
+use up to 3x the nominal budget in total sandbox time, with nothing
+flagging it. Per-attempt overrun can't actually happen (Docker's own
+container.wait(timeout=...) kills it), but total-loop overrun was
+completely invisible until today.
+
+Decided (with human) not to change the semantics or add enforcement yet
+-- real trajectory data from 6 runs showed budget usage well under 100%
+(1-37%) in every real case so far, so there's no evidence yet that this
+is an active problem, just an unguarded gap. Chose to make it visible
+first: added budget_exceeded (bool) to run_with_self_correction's return
+dict, computed as total_sandbox_seconds > spec.compute_budget_seconds,
+printed as a warning and persisted through trajectory JSON + Neo4j Run
+node (same pattern as total_sandbox_seconds).
+
+Also discovered ExperimentSpec.compute_budget_seconds is validated as
+int, not float (Pydantic rejects fractional budgets) -- minimum
+granularity is 1 second.
+
+Verified with a real forcing test (tests/test_budget_exceeded_flag.py):
+mocked Coder (fixed code with a real 0.5s sleep) and Critic (forced
+failure, exhausts all 3 attempts) but NOT the sandbox itself -- real
+Docker calls. 3 attempts x ~0.55-0.65s genuine duration summed to
+1.73-1.79s against a 1s budget -- correctly flagged budget_exceeded=True,
+confirmed via the WARNING print and the return dict.
+
+Still not done: nothing stops or alters behavior when budget_exceeded
+is True -- purely observational for now. Also still missing: LLM/token
+cost tracking (separate from sandbox time). See issue for both.
+
+
+## 2026-08-12 — check_numeric_direction() added to Analyst (partial #13 fix)
+
+Built a narrow heuristic to catch the exact failure pattern found in #13's
+B1 stress test: reasoning that cites two numbers with a directional word
+(higher/lower/more/less/etc.) where the claimed direction contradicts the
+actual arithmetic. Deliberately NOT a general logic checker -- doesn't
+touch cherry-picking (B2) and can't resolve reasoning that uses both
+direction-word types in the same sentence (confirmed this limitation is
+real, not hypothetical -- tested directly against the self-contradictory
+run from the original B1 batch, correctly returns checked=False,
+"ambiguous, skipping" rather than a false catch).
+
+Validated against real reasoning strings from yesterday's B1 stress test
+before wiring into analyze_result: 5/5 correct (caught the one known-bad
+run, zero false positives on the four good ones).
+
+Integration: flag-only, same philosophy as budget_exceeded from earlier
+this week -- does NOT override the verdict. direction_check is now a
+field in analyze_result()'s return dict (checked/consistent/reason).
+Deliberately chose not to match check_grounding's auto-downgrade pattern,
+since this is a heuristic with known blind spots (n=6 validated cases is
+small), not a deterministic substring check -- didn't want to risk a new
+failure mode (false-positive downgrades) while fixing an old one.
+
+Real mid-session mistake worth recording: first implementation attempt
+used the auto-downgrade pattern despite deciding against it -- an earlier
+draft got pasted into the file and the revised flag-only version never
+actually replaced it. Caught because the live re-test showed
+direction_check missing entirely from every real output; grep'd the file
+directly instead of assuming the edit had landed, found the stale
+downgrade-style code still present, fixed it properly, re-verified.
+Lesson: always grep/view the actual file state after an edit before
+re-running an expensive test batch, don't assume the edit instructions
+were applied correctly just because they were sent.
+
+Still not done: still doesn't catch cherry-picking (B2), still don't have
+a large-n false-positive rate for check_numeric_direction on real (not
+synthetic) Analyst outputs across varied hypotheses -- only tested on the
+adversarial-training example so far. Good next step: run this against a
+wider variety of real experiment outputs before considering whether to
+someday move it from flag-only to enforcement."
+
+
+## 2026-08-12 (cont.) — confirmed second blind spot in check_numeric_direction
+
+Tested check_numeric_direction() against real B2 cherry-picking reasoning
+("consistently reaches target loss in fewer steps... across all seeds" --
+the false generalization from yesterday's B2 run 3). Result: checked=False,
+"Fewer than 2 numbers found in reasoning" -- confirmed, cherry-picked
+generalizations often cite NO numbers at all, so there's nothing for this
+heuristic to even attempt to check.
+
+This is a distinct blind spot from the mixed-direction-language one found
+earlier today -- not the same limitation restated. Two known gaps now:
+(1) reasoning using both higher/lower-type words in one sentence -> ambiguous,
+skipped. (2) reasoning with a false claim but zero cited numbers -> nothing
+to check at all. #13's B2 mechanism (cherry-picking) remains fully uncaught
+by anything shipped so far -- would need something structurally different,
+e.g. checking whether the quote represents the full/majority of relevant
+data points rather than one favorable outlier.
