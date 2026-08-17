@@ -53,14 +53,19 @@ Respond with ONLY a JSON object in this exact format:
         direction_check = check_numeric_direction(reasoning)
         if direction_check["checked"] and not direction_check["consistent"]:
             print(f"--- WARNING: possible numeric direction inconsistency in Analyst reasoning: {direction_check['reason']} ---")
+        generalization_check = check_generalization_scope(reasoning, quote, output)
+        if generalization_check["checked"] and generalization_check.get("possible_cherry_pick"):
+            print(f"--- WARNING: possible cherry-picking in Analyst reasoning: {generalization_check['reason']} ---")
         return {
             "verdict": verdict,
             "reasoning": reasoning,
             "supporting_quote": quote,
             "direction_check": direction_check,
+            "generalization_check": generalization_check,
         }
     except (ValueError, json.JSONDecodeError):
         return {"verdict": "inconclusive", "reasoning": f"Could not parse analyst response: {raw[:200]}"}
+    
 def _normalize_for_grounding(text: str) -> str:
     """Narrow, explicit normalization for grounding comparison ONLY -- not
     used anywhere else. Deliberately does NOT touch numeric formatting
@@ -126,6 +131,48 @@ def check_numeric_direction(reasoning: str) -> dict:
         "checked": True,
         "consistent": consistent,
         "reason": None if consistent else f"Reasoning claims '{claimed_direction}' but first two numbers found ({a} then {b}) are actually {actual_direction} in that order.",
+    }
+
+def check_generalization_scope(reasoning: str, quote: str, output: str) -> dict:
+    """Heuristic check: if reasoning uses universal/consistency language
+    (e.g. 'consistently', 'across all', 'every case') while the quoted
+    evidence represents only one of several structurally similar data
+    points in the real output, flag it as a possible cherry-pick.
+
+    Does NOT determine whether the generalization is actually true --
+    only whether the Analyst appears to have looked at all comparable
+    evidence before making a universal claim. A pass here is not proof
+    the reasoning is correct, only that it isn't obviously cherry-picked
+    by this narrow test.
+    """
+    UNIVERSAL_WORDS = ["consistently", "across all", "every case", "in every",
+                        "all seeds", "all cases", "always", "invariably",
+                        "without exception", "in all"]
+
+    text_lower = reasoning.lower()
+    uses_universal_language = any(w in text_lower for w in UNIVERSAL_WORDS)
+    if not uses_universal_language:
+        return {"checked": False, "reason": "No universal/consistency language found in reasoning."}
+
+    quote_clean = quote.strip()
+    if not quote_clean:
+        return {"checked": False, "reason": "No quote to compare against."}
+
+    def template(line):
+        return re.sub(r"-?\d+\.?\d*", "N", line.strip())
+
+    quote_template = template(quote_clean)
+    output_lines = [l for l in output.split("\n") if l.strip()]
+    sibling_lines = [l for l in output_lines if template(l) == quote_template]
+
+    if len(sibling_lines) < 2:
+        return {"checked": False, "reason": "No structurally similar sibling lines found in output -- nothing to compare against."}
+
+    return {
+        "checked": True,
+        "possible_cherry_pick": True,
+        "reason": f"Reasoning uses universal language ('{[w for w in UNIVERSAL_WORDS if w in text_lower][0]}') but only cites 1 of {len(sibling_lines)} structurally similar data points in the output.",
+        "sibling_count": len(sibling_lines),
     }  
 if __name__ == "__main__":
     result = analyze_result(
