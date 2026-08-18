@@ -33,6 +33,9 @@ cases = [
         "Mean: baseline=420.0 steps, new_optimizer=448.0 steps",
         "unclear -- testing whether it flags even a TRUE universal claim",
     ),
+    ("empty reasoning, empty quote", "", "", "should not check"),
+    ("universal language, no quote", "The optimizer consistently performs better across all seeds.", "", "should not check (no quote)"),
+
 ]
 
 for label, reasoning, quote, expected in cases:
