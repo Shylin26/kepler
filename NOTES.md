@@ -320,3 +320,64 @@ to check at all. #13's B2 mechanism (cherry-picking) remains fully uncaught
 by anything shipped so far -- would need something structurally different,
 e.g. checking whether the quote represents the full/majority of relevant
 data points rather than one favorable outlier.
+
+## 2026-08-12 (cont.) — check_generalization_scope() added (B2 mechanism, #13)
+
+Built check_generalization_scope(reasoning, quote, output): flags when
+reasoning uses universal language (consistently/across all/every case/
+etc.) but the quoted evidence is only 1 of several structurally similar
+lines in the real output (matches lines by replacing all numbers with a
+placeholder and comparing templates -- works for any repeated-per-sample
+output format, not hardcoded to seeds).
+
+Tested against real B2 data (tests/test_generalization_scope.py):
+- Real cherry-pick (Seed 3 of 5, "consistently...across all seeds") ->
+  correctly flagged, possible_cherry_pick=True, sibling_count=5.
+- Honest run (cites the Mean line, no universal language) -> correctly
+  not flagged (nothing to check).
+- Adversarial control: a TRUE universal claim, but only the Mean line
+  quoted -> correctly returned checked=False, "no structurally similar
+  siblings" -- because Mean has no template-siblings among the Seed
+  lines. This is a real, explainable scope limit (the check has no
+  opinion on summary-statistic-only citations), not a bug.
+
+Wired into analyze_result() as a flag only (generalization_check field),
+same philosophy as direction_check and budget_exceeded -- does not
+override the verdict.
+
+Real mid-session mistakes, caught before committing (worth recording,
+this is the second time in two days this exact class of mistake
+happened -- pattern worth noting for next time):
+1. Test file was missing its import line entirely (copy/paste gap) --
+   caused a confusing NameError instead of an ImportError. Diagnosed by
+   testing the import in isolation rather than assuming the function
+   was broken.
+2. The wiring edit landed OUTSIDE analyze_result's try/except entirely
+   (after the except block), with broken indentation -- unreachable,
+   and should have been a SyntaxError. Diagnosed with grep + sed to see
+   real file content, confirmed with ast.parse before running anything
+   expensive, then replaced the whole broken region cleanly in one shot
+   instead of patching further.
+
+Lesson reinforced: multi-line pasted edits into an existing function are
+fragile via this workflow -- worth grep/sed-confirming the actual file
+state immediately after any such edit, every time, not just when
+something looks wrong afterward.
+
+Still not done: check_generalization_scope only catches cherry-picking
+when there ARE multiple structurally similar lines to compare against
+and universal language is used -- doesn't help when the false claim is
+phrased without universal words, or when the output format doesn't have
+repeated structurally-identical lines. #13 can probably be considered
+"reasonably mitigated for the two mechanisms we found" at this point,
+not "solved" -- no general guarantee against Analyst reasoning errors.
+
+## 2026-08-12 (cont.) — edge-case coverage for check_generalization_scope
+
+Added empty-input edge cases to tests/test_generalization_scope.py:
+empty reasoning+quote, and universal language with no quote at all.
+Both behave correctly -- no crashes, checked=False with a sensible
+reason each time (no universal language found / no quote to compare
+against). No further action needed, just closing the gap between this
+function and check_numeric_direction, which already had equivalent
+edge-case coverage.
