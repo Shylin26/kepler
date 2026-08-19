@@ -44,3 +44,33 @@ for label, reasoning, quote, expected in cases:
     print(f"  expected: {expected}")
     print(f"  result: {result}")
     print()
+
+epoch_output = (
+    "Epoch 1: loss=0.82\n"
+    "Epoch 2: loss=0.79\n"
+    "Epoch 3: loss=0.61\n"
+    "Epoch 4: loss=0.83\n"
+    "Epoch 5: loss=0.80\n"
+)
+
+epoch_cases = [
+    (
+        "epoch cherry-pick (parallel to Seed-3 bug)",
+        "Loss consistently decreased across all epochs, showing the model is learning well.",
+        "Epoch 3: loss=0.61",
+        "SHOULD FLAG",
+    ),
+    (
+        "epoch honest run (no universal claim)",
+        "Loss was inconsistent across epochs, dropping at epoch 3 but rising again afterward.",
+        "Epoch 3: loss=0.61",
+        "should NOT flag (no universal language)",
+    ),
+]
+
+for label, reasoning, quote, expected in epoch_cases:
+    result = check_generalization_scope(reasoning, quote, epoch_output)
+    print(f"{label}")
+    print(f"  expected: {expected}")
+    print(f"  result: {result}")
+    print()
