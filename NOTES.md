@@ -392,3 +392,40 @@ epoch cited with universal language, correctly stayed silent on an
 honest non-universal claim. Confirms the digit-templating approach
 generalizes structurally rather than being accidentally tuned to the
 one example (Seed-N) it was designed against.
+
+
+## 2026-08-13 (cont.) — key finding: generalization flag can't tell true from false
+
+Tested whether check_generalization_scope distinguishes a TRUE universal
+claim (all 5 seeds genuinely agree, new_optimizer faster in every one)
+from a FALSE one (the original B2 bug, 4/5 seeds actually disagree) when
+both only cite one seed as evidence. Result: IDENTICAL output in both
+cases -- possible_cherry_pick=True, same reason text, same sibling_count.
+
+This confirms precisely what the function actually measures: citation
+completeness (did the Analyst demonstrate checking all comparable data),
+NOT correctness of the claim itself. It would have caught the real B2
+bug, but it will equally flag perfectly true conclusions that just
+didn't cite every line. Important for any future decision about
+enforcement -- auto-downgrading on this flag would penalize correct
+reasoning about as often as incorrect reasoning. Reinforces the earlier
+decision to keep this (and direction_check, budget_exceeded) flag-only.
+
+Also: while consolidating all of today's test cases into one clean file
+(after several rounds of malformed edits -- see below), found and fixed
+a real bug in the test harness itself: the epoch-based test cases were
+being evaluated against real_output (the seed data) instead of
+epoch_output, meaning the earlier "epoch generalizes across formats"
+result, while directionally correct in its conclusion, was actually
+being computed against the wrong data the whole time. Re-ran after the
+fix -- same correct result, but now actually testing what it claims to
+test.
+
+Process note: several edits today went in with literal placeholder text
+("...existing cases...") mistakenly typed in verbatim instead of the
+real content it stood in for -- caused repeated SyntaxErrors. Fixed by
+abandoning incremental patches and writing one complete, correct file
+in a single pass instead. Lesson: for multi-section file edits via this
+workflow, a full-file rewrite is often safer than several sequential
+partial edits, especially once a file has drifted from a known-good
+state."
