@@ -381,3 +381,14 @@ reason each time (no universal language found / no quote to compare
 against). No further action needed, just closing the gap between this
 function and check_numeric_direction, which already had equivalent
 edge-case coverage.
+
+## 2026-08-13 — confirmed check_generalization_scope generalizes across output formats
+
+Tested check_generalization_scope against epoch-based logs ("Epoch N:
+loss=X") instead of the original seed-based format it was built
+against -- different label word, different metric name, same
+structural shape (5 similar lines). Correctly flagged a cherry-picked
+epoch cited with universal language, correctly stayed silent on an
+honest non-universal claim. Confirms the digit-templating approach
+generalizes structurally rather than being accidentally tuned to the
+one example (Seed-N) it was designed against.
