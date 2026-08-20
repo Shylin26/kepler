@@ -429,3 +429,31 @@ in a single pass instead. Lesson: for multi-section file edits via this
 workflow, a full-file rewrite is often safer than several sequential
 partial edits, especially once a file has drifted from a known-good
 state."
+
+## 2026-08-14 — real-world confirmation: check_grounding caught a live digit transcription error
+
+During a real python run_loop.py pipeline run, the Analyst produced this
+reasoning: "The momentum method shows a higher error and more erratic
+convergence compared to vanilla gradient descent," quoting:
+  "Step 2 (Momentum): theta_0 = 1.9278508718468521, theta_1 = ..."
+
+The REAL sandbox output for that line was:
+  "Step 2 (Momentum): theta_0 = 0.9278508718468521, theta_1 = ..."
+
+Single leading-digit transcription error (0 -> 1), everything else
+identical. check_grounding correctly rejected this as not grounded
+(even after #12's normalization fix, since normalization deliberately
+never touches numeric digits) and downgraded the verdict to
+inconclusive.
+
+This is the first live, non-synthetic confirmation of check_grounding
+working as intended, and it specifically validates the #12 decision to
+NOT normalize numeric formatting -- a looser numeric-normalization
+scheme could plausibly have treated 1.927... and 0.927... as "close
+enough" and let a real transcription error through as grounded.
+
+Also confirmed (not a bug): direction_check and generalization_check
+never ran on this response, since check_grounding's early-return on
+failure happens before either check executes in analyze_result(). No
+point checking the direction/scope of an already-fabricated quote --
+correct short-circuit behavior."
