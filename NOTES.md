@@ -457,3 +457,22 @@ never ran on this response, since check_grounding's early-return on
 failure happens before either check executes in analyze_result(). No
 point checking the direction/scope of an already-fabricated quote --
 correct short-circuit behavior."
+
+## 2026-08-20 (cont.) — confirmed direction_check and generalization_check work together
+
+Tested check_numeric_direction and check_generalization_scope against a
+single reasoning string designed to trip both (backwards comparison +
+cherry-picked universal claim). Both fired independently and correctly,
+no interference between them. See tests/test_checks_together.py.
+
+Also added a permanent regression test (tests/test_grounding_real_world_case.py)
+locking in the real digit-transcription bug caught live today during an
+actual pipeline run (1.927... misquoted for 0.927...) -- first live,
+non-synthetic confirmation that check_grounding works as intended, and
+specific validation of the earlier #12 decision not to normalize numeric
+formatting.
+
+Stepping away from Kepler for a bit to focus on internship interview
+prep. Nothing left in a broken state -- #13 has real, honest, tested
+progress (both known mechanisms mitigated, limits clearly documented),
+all commits pushed, NOTES.md current.
