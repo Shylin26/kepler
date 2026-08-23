@@ -476,3 +476,20 @@ Stepping away from Kepler for a bit to focus on internship interview
 prep. Nothing left in a broken state -- #13 has real, honest, tested
 progress (both known mechanisms mitigated, limits clearly documented),
 all commits pushed, NOTES.md current.
+
+## 2026-08-20 (cont. 2) — stress-tested check_syntax() edge cases
+
+Tested check_syntax() (Coder agent, used in run_loop.py's retry loop)
+against two previously-untested edge cases it could plausibly choke on:
+null bytes in source code, and deeply nested parentheses (5000 levels).
+Both handled gracefully -- CPython's compile() raises SyntaxError for
+both cases (not ValueError/RecursionError as guessed going in), and
+check_syntax's existing `except SyntaxError` correctly catches both.
+No uncaught crash risk found from these two cases specifically.
+
+Not proof no input can crash it -- just rules out the two most
+plausible-looking edge cases. See tests/test_check_syntax.py.
+
+Stepping away from Kepler to focus on internship interview prep.
+Nothing left broken or half-done -- see previous NOTES entry today for
+full status.
