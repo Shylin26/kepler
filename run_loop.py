@@ -135,4 +135,10 @@ if __name__ == "__main__":
 
     print("\n=== FINAL RESULTS ===")
     for i, lr in enumerate(logged_results):
-        print(f"Variation {i+1}: Success={lr['result']['success']}, Attempts={lr['result']['attempts']}, Run ID={lr['run_id']}")
+        result = lr["result"]
+        cost_note = f"{result.get('total_sandbox_seconds', 0):.2f}s"
+        if result.get("budget_exceeded"):
+            cost_note += " (BUDGET EXCEEDED)"
+        print(f"Variation {i+1}: Success={result['success']}, Attempts={result['attempts']}, Sandbox time={cost_note}, Run ID={lr['run_id']}")
+
+    
