@@ -493,3 +493,31 @@ plausible-looking edge cases. See tests/test_check_syntax.py.
 Stepping away from Kepler to focus on internship interview prep.
 Nothing left broken or half-done -- see previous NOTES entry today for
 full status.
+
+
+## 2026-08-20 (cont. 3) — first organic budget_exceeded, and a real runaway-cost case
+
+Added total_sandbox_seconds/budget_exceeded to run_multiple_experiments'
+final console summary (previously tracked but invisible without opening
+a trajectory file or querying Neo4j directly).
+
+Immediately surfaced a real, organic budget_exceeded=True in an actual
+(non-forced) pipeline run -- first time seen outside a deliberate test.
+Variation 2 used 180.50s of sandbox time across 3 attempts (vs a 60s
+nominal budget per the earlier real-data sample). Looking at the actual
+output: the code diverged to NaN early (repeated "Slope: nan, Intercept:
+nan" hundreds of times) and kept looping for the rest of each attempt's
+timeout without erroring out or stopping early -- across all 3 retries,
+never recovering.
+
+This is a real instance of the "runaway cost" failure mode flagged in
+the original design doc (Section 17) -- not a bug in our pipeline, but
+exactly the kind of case compute_budget_seconds exists to guard against.
+Confirms today's console-visibility feature has real, immediate practical
+value: this would have been invisible before, buried in a trajectory
+file nobody was looking at.
+
+Worth a future look: could the sandbox/Critic detect NaN-looping earlier
+and fail fast instead of burning the full timeout 3 times over? Not
+tackled today, just flagged as a real, evidenced case worth considering
+later."
