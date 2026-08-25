@@ -521,3 +521,26 @@ Worth a future look: could the sandbox/Critic detect NaN-looping earlier
 and fail fast instead of burning the full timeout 3 times over? Not
 tackled today, just flagged as a real, evidenced case worth considering
 later."
+
+## 2026-08-20 (cont. 4) — parking lot for next small sessions
+
+Kepler is in a clean, fully-committed state. Prioritizing internship
+interview prep for now, but keeping a short list of small, bounded
+next steps so future sessions don't need to re-derive context:
+
+- Look into the NaN-looping runaway-cost case found today (Variation 2,
+  180.50s) -- could the Critic or sandbox detect a NaN-loop early and
+  fail fast instead of burning the full budget 3x over?
+- LLM/token cost tracking (separate from sandbox wall-clock time) --
+  still untouched, flagged back when total_sandbox_seconds was added.
+- Semantic hypothesis dedup (#5) -- reworded duplicate questions still
+  create separate graph nodes; earlier prompt-level fix attempt didn't
+  work reliably.
+- Milestone 4 planted-answer benchmark -- the actual next big piece,
+  bigger scope than a single small session, worth a dedicated block
+  of time rather than squeezing in.
+- Chase down the GitHub contributions graph issue (never resolved --
+  commits/dates/branch all checked out fine, cause still unknown).
+
+Pick one when there's a spare 20-30 min. No pressure to do all, or any,
+before getting back to real work here."
