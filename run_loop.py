@@ -17,7 +17,9 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     for attempt in range(1,max_attempts+1):
         print(f"\n=== Attempt {attempt} ===")
 
-        raw = generate_code(task)
+        raw, llm_cost = generate_code(task)
+        print("--- LLM COST (Coder) ---")
+        print(llm_cost)
         code = strip_markdown_fences(raw)
         print("--- CODE ---")
         print(code)

@@ -1,5 +1,6 @@
 import ollama
 import re
+from memory.trajectory_store.llm_cost import extract_llm_cost
 def generate_code(task_description: str, model: str = "qwen2.5-coder:7b") -> str:
     prompt = f"""Write a complete, runnable Python script that does the following:
 
@@ -25,7 +26,8 @@ Rules:
 """
 
     response = ollama.generate(model=model, prompt=prompt, options={"temperature": 0.7})
-    return response["response"]
+    cost = extract_llm_cost(response)
+    return response["response"], cost
 
 
 
@@ -47,7 +49,9 @@ def check_syntax(code: str) -> dict:
 
 if __name__ =="__main__":
     from execution.sandbox.executor import run_code_in_sandbox
-    raw=generate_code("Print the first 10 fibbonacci numbers.")
+    raw, cost = generate_code("Print the first 10 fibbonacci numbers.")
+    print("--- LLM COST ---")
+    print(cost)
     clean=strip_markdown_fences(raw)
     print("--- CODE THE LLM WROTE ---")
     print(clean)
