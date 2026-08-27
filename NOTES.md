@@ -544,3 +544,50 @@ next steps so future sessions don't need to re-derive context:
 
 Pick one when there's a spare 20-30 min. No pressure to do all, or any,
 before getting back to real work here."
+
+
+## 2026-08-25 — LLM cost tracking added (Coder only, proof of concept); real finding about Ollama concurrency
+
+Built extract_llm_cost() (memory/trajectory_store/llm_cost.py): pulls
+total_duration, load_duration, prompt_eval_count, eval_count from
+Ollama's raw generate() response -- metadata that was always available
+but previously discarded entirely (only response["response"], the text,
+was ever used). Separates one-time model-load cost from real inference
+cost, same reasoning as separating container overhead from sandbox
+execution time earlier.
+
+Wired into ONLY the Coder agent's generate_code() as a scoped proof of
+concept -- deliberately not touching Critic/Planner/Director/Analyst's
+generate() calls yet (5 more call sites, left for a future session).
+generate_code() now returns (code, cost) instead of just code;
+run_loop.py's one call site updated to unpack and print it. Not yet
+threaded into the trajectory logger or Neo4j graph -- just computed and
+printed to console for now.
+
+Verified with a real standalone call (1.7s inference, 7.9s cold-start
+load, correctly separated) and a real pipeline run.
+
+REAL FINDING: during the real pipeline run (3 parallel Ray-wrapped
+experiments), total_duration_seconds for individual generate_code()
+calls climbed steadily across the run -- 92s, then 153s, 221s, 262s,
+269s, 282s -- even though each is a single, independent LLM call, not
+a cumulative sum we're computing. Token counts stayed modest throughout
+(a few hundred to ~1200 tokens per call, nothing unusual). This strongly
+suggests the local Ollama server is serializing/queuing concurrent
+requests from the 3 parallel Ray workers rather than truly running them
+in parallel -- meaning real parallelism exists at the Ray/sandbox layer
+(confirmed earlier when Ray was first integrated) but NOT at the LLM
+inference layer, which is a shared bottleneck. This was completely
+invisible before today -- nothing previously measured or reported
+individual LLM call duration at all.
+
+Worth investigating in a future session: does Ollama support genuine
+concurrent request handling (e.g. multiple model instances, batching),
+or is single-instance serialization an inherent limit of this local
+setup? Relevant to Milestone 2's distributed-execution claims -- the
+current setup may not actually parallelize the most expensive part of
+each experiment cycle.
+
+Still not done: 5 more ollama.generate() call sites (Critic, Planner,
+Director x2, Analyst) not yet instrumented. Cost not yet persisted to
+trajectory JSON or Neo4j -- console-only for now."
