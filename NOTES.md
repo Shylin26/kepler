@@ -591,3 +591,39 @@ each experiment cycle.
 Still not done: 5 more ollama.generate() call sites (Critic, Planner,
 Director x2, Analyst) not yet instrumented. Cost not yet persisted to
 trajectory JSON or Neo4j -- console-only for now."
+
+## 2026-08-25 (cont.) — Ollama concurrency: contention, not clean serialization or parallelism
+
+Directly tested the concurrency hypothesis from today's LLM cost tracking
+finding (real pipeline run showed generate_code() durations climbing
+92s->282s across concurrent Ray workers). Isolated test
+(tests/test_ollama_concurrency.py): 3 sequential vs 3 concurrent
+generate() calls, same prompt, model pre-warmed to remove load_duration
+noise.
+
+Sequential: 4.14s, 7.77s, 4.76s -- total 16.67s.
+Concurrent: 4.67s, 12.47s, 8.57s -- total wall-clock 12.48s.
+
+More nuanced than a clean serialized-vs-parallel answer:
+- Real overlap DID happen -- concurrent total (12.48s) is ~25% less
+  than sequential total (16.67s), so it's not fully serialized.
+- But individual call latency increased substantially under concurrent
+  load (one call took 12.47s vs a ~5.6s sequential average) -- not
+  clean parallelism either, where all 3 would finish close together
+  near a single call's duration.
+- Signature is CPU/memory resource contention on a single local
+  machine, not clean request queuing or true parallel execution.
+
+This is a smaller, cleaner, more isolated signal than the real pipeline
+run's much larger slowdown (up to 282s per call) -- the pipeline number
+is likely compounded by additional load beyond just concurrent LLM
+calls: 3 Ray workers, 3 concurrent Docker sandbox containers, and Ray's
+own overhead, all competing on the same machine simultaneously. Today's
+test isolates just the LLM-concurrency piece and shows a real but more
+moderate effect on its own.
+
+Relevant to Milestone 2 distributed-execution claims: true multi-machine
+or multi-GPU-worker scaling would likely need each worker to hit its
+own Ollama instance/model, not share one local server, to avoid this
+contention -- worth keeping in mind for Milestone 2's "not needed yet
+on this Mac" scoping if/when moving beyond local single-machine testing."
