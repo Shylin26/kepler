@@ -1,5 +1,6 @@
 import ollama
 import json
+from memory.trajectory_store.llm_cost import extract_llm_cost
 def basic_sanity_check(sandbox_result:dict)->dict:
     exit_code=sandbox_result.get("exit_code")
     output=sandbox_result.get("output","")
@@ -49,6 +50,7 @@ Answer with ONLY a JSON object, nothing else, in this exact format:
 """
 
     response=ollama.generate(model=model,prompt=prompt)
+    llm_cost = extract_llm_cost(response)
     raw=response["response"].strip()
     try:
         start = raw.index("{")
@@ -57,9 +59,10 @@ Answer with ONLY a JSON object, nothing else, in this exact format:
         return {
             "passed": bool(parsed.get("adheres_to_task", False)),
             "reason": parsed.get("reason", "No reason given."),
+            "llm_cost": llm_cost,
         }
     except (ValueError, json.JSONDecodeError):
-        return {"passed": False, "reason": f"Could not parse judge response: {raw[:200]}"}
+        return {"passed": False, "reason": f"Could not parse judge response: {raw[:200]}", "llm_cost": llm_cost}
     
 
 
