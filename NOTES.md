@@ -627,3 +627,22 @@ or multi-GPU-worker scaling would likely need each worker to hit its
 own Ollama instance/model, not share one local server, to avoid this
 contention -- worth keeping in mind for Milestone 2's "not needed yet
 on this Mac" scoping if/when moving beyond local single-machine testing."
+
+## 2026-08-25 (cont. 2) — LLM cost tracking extended to Critic (task_adherence_check)
+
+Second of 6 ollama.generate() call sites now instrumented with
+extract_llm_cost() (after Coder's generate_code() earlier today).
+task_adherence_check already returned a dict, so llm_cost was added as
+a new key rather than changing the return type -- no call-site changes
+needed in run_loop.py, existing verdict["passed"]/verdict["reason"]
+usage unaffected. Added to both the success and parse-failure return
+paths, since a parse failure still represents a real LLM call that
+should be counted.
+
+Verified with a real standalone call: total_duration_seconds=20.833,
+correctly split into load (10.318s, cold start) and inference (10.515s).
+
+Remaining call sites not yet instrumented: Planner (plan_experiment),
+Director (propose_topic_area, propose_next_research_question), Analyst
+(analyze_result). Cost still not persisted to trajectory JSON or Neo4j --
+console/return-value only for now across both instrumented agents."
