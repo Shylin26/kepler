@@ -117,11 +117,13 @@ if __name__ == "__main__":
     from agents.planner.planner_agent import plan_experiment
 
     from director.director_agent import propose_topic_area
-    topic_area = propose_topic_area()
+    topic_area, topic_area_cost = propose_topic_area()
     print(f"=== DIRECTOR PROPOSED TOPIC AREA: {topic_area} ===")
+    print(f"--- LLM COST (Director: topic_area) ---\n{topic_area_cost}")
 
-    research_question = propose_next_research_question(topic_area)
+    research_question, research_question_cost = propose_next_research_question(topic_area)
     print(f"=== DIRECTOR PROPOSED QUESTION: {research_question} ===")
+    print(f"--- LLM COST (Director: research_question) ---\n{research_question_cost}")
     
     hypothesis_id = find_or_create_hypothesis(research_question, topic_area=topic_area)
     print(f"=== HYPOTHESIS CREATED IN GRAPH: {hypothesis_id} ===")

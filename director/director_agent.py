@@ -1,6 +1,7 @@
 import ollama
 import json
 from memory.knowledge_graph.graph_client import run_write_query, get_covered_topic_areas
+from memory.trajectory_store.llm_cost import extract_llm_cost
 
 def get_existing_hypotheses() -> list[str]:
     """Return the text of every Hypothesis currently in the knowledge graph."""
@@ -35,7 +36,7 @@ No preamble, no explanation, no quotes.
 """
 
     response = ollama.generate(model=model, prompt=prompt)
-    return response["response"].strip()
+    return response["response"].strip(), extract_llm_cost(response)
 
 def propose_next_research_question(topic_area: str, model: str = "qwen2.5-coder:7b") -> str:
     """Ask an LLM to propose a new research question in the given topic area,
@@ -61,11 +62,13 @@ No preamble, no explanation, no quotes around it.
 """
 
     response = ollama.generate(model=model, prompt=prompt)
-    return response["response"].strip()
+    return response["response"].strip(), extract_llm_cost(response)
 
 if __name__ == "__main__":
-    topic = propose_topic_area()
+    topic, topic_cost = propose_topic_area()
     print(f"=== PROPOSED TOPIC AREA: {topic} ===")
+    print(f"--- LLM COST ---\n{topic_cost}")
 
-    question = propose_next_research_question(topic)
+    question, question_cost = propose_next_research_question(topic)
     print(f"=== PROPOSED RESEARCH QUESTION: {question} ===")
+    print(f"--- LLM COST ---\n{question_cost}")
