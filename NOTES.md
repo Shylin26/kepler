@@ -646,3 +646,70 @@ Remaining call sites not yet instrumented: Planner (plan_experiment),
 Director (propose_topic_area, propose_next_research_question), Analyst
 (analyze_result). Cost still not persisted to trajectory JSON or Neo4j --
 console/return-value only for now across both instrumented agents."
+
+## 2026-08-30 — CRITICAL FINDING: Ollama silently front-truncates prompts at 4096 tokens
+
+While extending LLM cost tracking to Critic/Director, noticed a suspicious
+prompt_eval_count=4096 on a Critic call for a run with a very large
+(NaN-looping) sandbox output. Investigated directly:
+
+- `ollama show qwen2.5-coder:7b` confirms the MODEL supports up to 32768
+  tokens of context -- but none of our ollama.generate() calls anywhere
+  in the codebase pass num_ctx, so Ollama silently uses its own runtime
+  default, which is 4096 here (confirmed empirically, not from docs).
+- Built a 3000-line synthetic prompt (tests/test_context_window_truncation.py,
+  tests/test_context_window_truncation2.py) and asked about a data point
+  near the END vs near the START of the prompt.
+  - Asked about data point 2999 (near the end): correctly answered 20993.
+  - Asked about data point 5 (near the start): WRONG, answered 10 instead
+    of 35.
+- CONFIRMED: Ollama front-truncates -- drops the BEGINNING of an
+  over-length prompt, keeps the tail. prompt_eval_count was capped at
+  4096 in both tests regardless of the true prompt length.
+
+WHY THIS MATTERS A LOT: every prompt in this codebase puts task_description/
+hypothesis/expected_outcome FIRST, then code, then the actual sandbox
+output LAST (see critic_agent.py's task_adherence_check, analyst_agent.py's
+analyze_result). For any run with a large enough output -- exactly the
+"runaway/NaN-looping" case found earlier today, or any experiment with a
+long training log -- the ORIGINAL TASK DESCRIPTION could get silently
+dropped from the prompt entirely, while the (possibly garbage) tail output
+survives. This means the Critic or Analyst could genuinely be judging code
+against a task it can no longer see at all, with zero indication this
+happened -- a more fundamental failure mode than anything caught in #12/#13,
+since it's not a reasoning error, it's missing input.
+
+Not yet measured: how often real pipeline runs actually exceed 4096
+tokens (the earlier 10,000-line NaN output almost certainly did; most
+smaller successful runs probably don't). Not yet fixed -- see filed
+issue for possible directions (raise num_ctx explicitly, truncate/
+summarize sandbox output before it reaches the prompt, reorder prompts
+so critical instructions are least likely to be dropped, or detect and
+warn when a call is likely near/over the limit)."
+
+## 2026-08-30 (cont.) — refined finding: truncation confirmed fixable, not a recall failure
+
+Follow-up to the earlier truncation finding. Tested whether raising
+num_ctx actually fixes recall of early prompt content, or whether large
+contexts cause genuine model recall failure even without truncation.
+
+- 3000-line prompt (~21,000 tokens), num_ctx=16384: prompt_eval_count
+  correctly used the full 16384 (confirms num_ctx works, no longer
+  capped at the old 4096 default) -- but the prompt itself still
+  exceeded 16384, so partial truncation remained. Early-item recall
+  test (Data point 5) still failed (answered 15, not 35).
+- 300-line prompt (~4000 tokens), num_ctx=16384: prompt fits entirely
+  within the window (prompt_eval_count=3975, well under 16384). Same
+  early-item recall test now CORRECTLY answered 35.
+
+CONCLUSION: this is a genuine, fixable truncation/configuration issue,
+not a deeper long-context recall problem. Raising num_ctx high enough
+to actually cover the real prompt length resolves it. The earlier
+partial-fix result was because 16384 wasn't high enough for that
+specific 21,000-token test prompt -- not evidence the fix doesn't work.
+
+Next step: raise num_ctx in the actual ollama.generate() calls across
+the codebase (Coder, Critic, Planner, Director, Analyst) -- probably to
+something close to the model's real ceiling (32768) rather than a
+number picked to match one test case, since real experiment outputs vary
+unpredictably in size."
