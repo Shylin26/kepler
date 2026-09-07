@@ -49,7 +49,7 @@ Answer with ONLY a JSON object, nothing else, in this exact format:
 {{"adheres_to_task": true or false, "reason": "one sentence explanation"}}
 """
 
-    response=ollama.generate(model=model,prompt=prompt)
+    response=ollama.generate(model=model,prompt=prompt,options={"num_ctx": 32768})
     llm_cost = extract_llm_cost(response)
     raw=response["response"].strip()
     try:
