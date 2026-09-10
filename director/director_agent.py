@@ -35,7 +35,7 @@ Respond with ONLY the topic area as a short phrase (3-6 words), nothing else.
 No preamble, no explanation, no quotes.
 """
 
-    response = ollama.generate(model=model, prompt=prompt)
+    response = ollama.generate(model=model, prompt=prompt, options={"num_ctx": 32768})
     return response["response"].strip(), extract_llm_cost(response)
 
 def propose_next_research_question(topic_area: str, model: str = "qwen2.5-coder:7b") -> str:
@@ -61,7 +61,7 @@ Respond with ONLY the new research question as a single sentence, nothing else.
 No preamble, no explanation, no quotes around it.
 """
 
-    response = ollama.generate(model=model, prompt=prompt)
+    response = ollama.generate(model=model, prompt=prompt, options={"num_ctx": 32768})
     return response["response"].strip(), extract_llm_cost(response)
 
 if __name__ == "__main__":
