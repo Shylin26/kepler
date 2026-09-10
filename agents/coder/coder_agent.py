@@ -25,7 +25,7 @@ Rules:
   values may never cross the threshold exactly. Never write an unbounded loop.
 """
 
-    response = ollama.generate(model=model, prompt=prompt, options={"temperature": 0.7})
+    response = ollama.generate(model=model, prompt=prompt, options={"temperature": 0.7, "num_ctx": 32768})
     cost = extract_llm_cost(response)
     return response["response"], cost
 
