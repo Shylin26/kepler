@@ -713,3 +713,31 @@ the codebase (Coder, Critic, Planner, Director, Analyst) -- probably to
 something close to the model's real ceiling (32768) rather than a
 number picked to match one test case, since real experiment outputs vary
 unpredictably in size."
+
+
+## [date] — Fixed Ollama context-truncation for Coder's generate_code()
+
+**What broke (was still exposed):** Coder's generate_code() call didn't pass
+num_ctx, same as the original Critic bug (#16). On self-correction retries
+(attempts 2-3 in run_with_self_correction), the prompt is rebuilt as
+task_description + previous failed code + Critic's failure reason — with
+task_description first. Under Ollama's ~4096 default, a long retry prompt
+could silently drop the original task, same failure shape as Critic.
+
+**Why it matters:** Retry prompts grow with real generated code + Critic
+reasoning text, which can plausibly exceed 4096 tokens — meaning Coder could
+silently start "fixing" a lost task on later attempts without any visible error.
+
+**The fix:** Added num_ctx=32768 to the options dict in generate_code()'s
+ollama.generate() call (agents/coder/coder_agent.py, line 28).
+
+**Verification:** New test tests/test_context_window_truncation_coder.py —
+planted a marker instruction at the start of task_description, padded the
+prompt to 14,287 tokens (well over the old 4096 default) with simulated
+retry-context filler, confirmed via real ollama.generate() call that the
+marker was correctly followed in valid, syntax-checked generated code.
+Not a synthetic assumption — genuinely exercised the truncation-prone path.
+
+**Remaining:** 4 of 6 call sites still need num_ctx=32768: Planner's
+plan_experiment(), Director's propose_topic_area() and
+propose_next_research_question(), Analyst's analyze_result(). Tracked in #16.
