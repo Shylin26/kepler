@@ -741,3 +741,39 @@ Not a synthetic assumption — genuinely exercised the truncation-prone path.
 **Remaining:** 4 of 6 call sites still need num_ctx=32768: Planner's
 plan_experiment(), Director's propose_topic_area() and
 propose_next_research_question(), Analyst's analyze_result(). Tracked in #16.
+
+
+## [11 September 2026] — Fixed Ollama context-truncation for Director's propose_topic_area() and propose_next_research_question()
+
+**What broke (was still exposed):** Neither Director call site passed any
+options dict to ollama.generate() at all -- both ran on Ollama's ~4096
+default. Both prompts put instructions/constraints first and an accumulating
+list last (covered_list for topic areas, existing_list for hypotheses).
+
+**Why it matters, and how this differs from Coder/Critic:** Coder and
+Critic's growth is bounded (max 3 retry attempts per experiment). Director's
+lists are pulled from the FULL Neo4j history with no LIMIT/cap -- they grow
+for the entire lifetime of the project. This is a longer-horizon, unbounded
+version of the same risk. Filed as a separate issue (see below) since
+num_ctx=32768 caps today's problem but not this project's future growth.
+
+**The fix:** Added options={"num_ctx": 32768} to both ollama.generate() calls
+in director/director_agent.py (propose_topic_area line 38,
+propose_next_research_question line 64).
+
+**Verification:** New test tests/test_context_window_truncation_director.py.
+Planted a distinctive, plausible topic area ("learning rate scheduling") at
+the very START of a synthetic 1200-line covered-list, padded to 12,264
+tokens (well over the old 4096 default). Confirmed via real ollama.generate()
+call that the model correctly avoided re-proposing it, instead proposing a
+genuinely different topic ("Batch normalization in neural networks"). One
+test covers both functions since they share an identical prompt shape.
+**Caveat, stated honestly:** this evidence is suggestive, not airtight --
+the model choosing a different topic could theoretically happen by chance
+rather than true recall of the planted entry. Weaker proof than Coder's
+marker-instruction test, but the best available given the task's open-ended
+nature.
+
+**Remaining:** 2 of 6 call sites still need num_ctx=32768: Analyst's
+analyze_result() and Planner's plan_experiment() (deferred separately due
+to its ExperimentSpec return-type complication). Tracked in #16.
