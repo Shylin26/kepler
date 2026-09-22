@@ -33,7 +33,7 @@ Respond with ONLY a JSON object in this exact format:
 {{"verdict": "supports" or "refutes" or "inconclusive", "reasoning": "one to two sentence explanation", "supporting_quote": "exact verbatim substring copied from the output above"}}
 """
 
-    response = ollama.generate(model=model, prompt=prompt)
+    response = ollama.generate(model=model, prompt=prompt, options={"num_ctx": 32768})
     raw = response["response"].strip()
 
     try:
