@@ -777,3 +777,66 @@ nature.
 **Remaining:** 2 of 6 call sites still need num_ctx=32768: Analyst's
 analyze_result() and Planner's plan_experiment() (deferred separately due
 to its ExperimentSpec return-type complication). Tracked in #16.
+## [date] — Fixed Ollama context-truncation for Analyst's analyze_result()
+
+**What broke (was still exposed):** No options dict at all (same as
+Director before its fix) -- ran on Ollama's ~4096 default. Highest-risk
+call site of the six: hypothesis/expected_outcome come first, but output
+(completely unbounded -- could be a verbose or NaN-looping runaway script)
+comes last, right before instructions.
+
+**Why it matters more here than elsewhere:** If truncation dropped the
+hypothesis while output survived, the Analyst could still produce a verdict
+grounded in a real, verbatim quote from output -- passing check_grounding()
+-- while having judged against a hypothesis it never actually saw. A
+subtler, more dangerous failure than wrong code, since existing safety
+checks wouldn't catch it.
+
+**The fix:** Added options={"num_ctx": 32768} to the ollama.generate() call
+in agents/analyst/analyst_agent.py (line 36).
+
+**Verification:** New test tests/test_context_window_truncation_analyst.py.
+Verified with a real call at 31,556 prompt tokens (near the 32768 ceiling
+itself, ~8x the old default) that a real hypothesis and a real result line
+survived and produced a correct, numerically precise "refutes" verdict with
+an exact supporting quote, independently corroborated by direction_check.
+First test attempt failed -- but due to a test design flaw (filler output
+formed its own convincing fake decreasing-loss trend, competing narratively
+with the real result line), not a truncation regression. Caught and fixed
+before drawing any conclusion, by switching to inert, non-narrative filler.
+
+**Status: 5 of 6 call sites now fixed (Critic, Coder, Director x2, Analyst).
+Remaining: Planner's plan_experiment() -- deliberately deferred, more
+invasive fix due to its Pydantic ExperimentSpec return type used broadly
+via spec.model_dump() and in a list comprehension in run_loop.py's __main__.**
+
+## [date] — Added num_ctx=32768 to Planner's plan_experiment() (6/6 call sites now fixed)
+
+**What broke (was still exposed):** No options dict, same pattern as
+Director/Analyst before their fixes. Added for consistency.
+
+**Different from the other five:** This prompt has no unbounded growth
+mechanism -- no retry history, no accumulating list, no unbounded output
+field. research_question and the static example ExperimentSpec JSON keep
+the prompt naturally short. No realistic scenario exists where this prompt
+would exceed even the old ~4096 default. Padding it artificially to "prove"
+the fix would have tested a scenario that can't occur in practice, so the
+test here checks something different: that the fix is inert (doesn't break
+normal operation), not that it prevents truncation under load.
+
+**The fix:** Added options={"num_ctx": 32768} to the ollama.generate() call
+in agents/planner/planner_agent.py.
+
+**Verification:** New test tests/test_planner_num_ctx_regression.py.
+Confirmed plan_experiment() still returns a valid, correctly-typed
+ExperimentSpec (task_description, hypothesis, compute_budget_seconds as
+positive int, etc.) with num_ctx=32768 set.
+
+**Separately observed, deliberately NOT fixed here:** plan_experiment()'s
+manual JSON extraction (raw.index("{") / raw.rindex("}")) is fragile --
+breaks silently or raises an unhandled ValueError if the model adds
+preamble/trailing text or returns unparseable output. Out of scope for the
+truncation fix. Worth its own issue.
+
+**Status: All 6 of 6 ollama.generate() call sites now have num_ctx=32768.
+Issue #16 can be closed.**
