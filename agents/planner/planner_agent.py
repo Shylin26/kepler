@@ -41,7 +41,7 @@ Now produce your own JSON object, with the SAME fields, filled in with real
 content for the research question above -- not the example's content.
 Respond with ONLY the JSON object, nothing else.
 """
-    response = ollama.generate(model=model, prompt=prompt)
+    response = ollama.generate(model=model, prompt=prompt, options={"num_ctx": 32768})
     raw = response["response"].strip()
     start = raw.index("{")
     end = raw.rindex("}") + 1
