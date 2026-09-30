@@ -1,6 +1,7 @@
 import ollama
 import json
 import re
+from memory.trajectory_store.llm_cost import extract_llm_cost
 
 def analyze_result(hypothesis: str, expected_outcome: str, output: str, model: str = "qwen2.5-coder:7b") -> dict:
     """Ask an LLM to judge whether an experiment's actual output supports,
@@ -35,6 +36,7 @@ Respond with ONLY a JSON object in this exact format:
 
     response = ollama.generate(model=model, prompt=prompt, options={"num_ctx": 32768})
     raw = response["response"].strip()
+    llm_cost = extract_llm_cost(response)
 
     try:
         start = raw.index("{")
@@ -49,6 +51,7 @@ Respond with ONLY a JSON object in this exact format:
             return {
                 "verdict": "inconclusive",
                 "reasoning": f"[DOWNGRADED: {grounding['reason']}] Original reasoning: {reasoning}",
+                "llm_cost": llm_cost,
             }
         direction_check = check_numeric_direction(reasoning)
         if direction_check["checked"] and not direction_check["consistent"]:
@@ -62,10 +65,11 @@ Respond with ONLY a JSON object in this exact format:
             "supporting_quote": quote,
             "direction_check": direction_check,
             "generalization_check": generalization_check,
+            "llm_cost": llm_cost,
         }
     except (ValueError, json.JSONDecodeError):
-        return {"verdict": "inconclusive", "reasoning": f"Could not parse analyst response: {raw[:200]}"}
-    
+        return {"verdict": "inconclusive", "reasoning": f"Could not parse analyst response: {raw[:200]}", "llm_cost": llm_cost}
+
 def _normalize_for_grounding(text: str) -> str:
     """Narrow, explicit normalization for grounding comparison ONLY -- not
     used anywhere else. Deliberately does NOT touch numeric formatting
@@ -173,7 +177,8 @@ def check_generalization_scope(reasoning: str, quote: str, output: str) -> dict:
         "possible_cherry_pick": True,
         "reason": f"Reasoning uses universal language ('{[w for w in UNIVERSAL_WORDS if w in text_lower][0]}') but only cites 1 of {len(sibling_lines)} structurally similar data points in the output.",
         "sibling_count": len(sibling_lines),
-    }  
+    }
+
 if __name__ == "__main__":
     result = analyze_result(
         hypothesis="Adversarial training improves model robustness compared to standard training.",
