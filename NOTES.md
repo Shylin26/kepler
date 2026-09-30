@@ -840,3 +840,37 @@ truncation fix. Worth its own issue.
 
 **Status: All 6 of 6 ollama.generate() call sites now have num_ctx=32768.
 Issue #16 can be closed.**
+
+## [date] — Threaded LLM cost tracking through Planner's plan_experiment()
+
+**The decision, finally made:** plan_experiment() now returns
+(ExperimentSpec, cost) tuple, matching Coder/Director's pattern -- chosen
+over adding llm_cost as a schema field (would conflate two concerns) or
+leaving it print-only (inconsistent with the other four agents).
+
+**Real blast radius, confirmed via grep (not assumed):** only two real
+project call sites touch ExperimentSpec.model_dump() or plan_experiment()
+in pipeline code -- memory/trajectory_store/logger.py and run_loop.py's
+list comprehension. Much smaller than the original recap implied ("used
+broadly"). Only run_loop.py needed editing: unpacked planner_results into
+parallel specs/planner_costs lists, keeping specs as plain ExperimentSpec
+objects so log_trajectory() and run_multiple_experiments() needed zero
+changes.
+
+**Status:** planner_costs is captured and printed per-variation, not yet
+persisted into trajectory JSON or the graph -- deliberately deferred,
+same discipline as the original decision itself.
+
+**Verification:** full real pipeline run (python -m run_loop) -- Director,
+Planner x3, Ray-parallelized Coder/Critic/sandbox loops, log_trajectory()
+and log_run_to_graph() all completed successfully for all 3 variations.
+Confirms specs remained real objects throughout, never became tuples
+downstream. 1 of 3 variations succeeded, 2 failed after 3 attempts (real
+Coder bug, unrelated to this change) -- Analyst correctly downgraded one
+verdict to inconclusive via check_grounding(). Noted but not investigated:
+one Critic call took 424s, likely Ollama contention from 3 parallel Ray
+workers (consistent with the earlier documented concurrency finding), not
+a regression.
+
+**Status: All 5 agents (Coder, Critic, Director x2, Analyst, Planner) now
+have LLM cost tracking wired in and verified.**
