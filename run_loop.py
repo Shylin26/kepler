@@ -130,10 +130,12 @@ if __name__ == "__main__":
 
     num_variations = 3
     print(f"=== PLANNING {num_variations} EXPERIMENT VARIATIONS ===")
-    specs = [plan_experiment(research_question) for _ in range(num_variations)]
-    for i, s in enumerate(specs):
+    planner_results = [plan_experiment(research_question) for _ in range(num_variations)]
+    specs = [spec for spec, cost in planner_results]
+    planner_costs = [cost for spec, cost in planner_results]
+    for i, (s, c) in enumerate(zip(specs, planner_costs)):
         print(f"--- Variation {i+1} task: {s.task_description}")
-
+        print(f"--- Variation {i+1} LLM COST (Planner) ---\n{c}")
     print(f"\n=== RUNNING {num_variations} EXPERIMENTS IN PARALLEL ===")
     logged_results = run_multiple_experiments(specs, hypothesis_id, research_question)
 

@@ -1,6 +1,7 @@
 import ollama
 import json
 from schemas.experiment_spec import ExperimentSpec
+from memory.trajectory_store.llm_cost import extract_llm_cost
 
 def plan_experiment(research_question:str,model:str="qwen2.5-coder:7b")->ExperimentSpec:
     example = ExperimentSpec(
@@ -47,13 +48,12 @@ Respond with ONLY the JSON object, nothing else.
     end = raw.rindex("}") + 1
     parsed = json.loads(raw[start:end])
 
-    return ExperimentSpec(**parsed)
+    llm_cost = extract_llm_cost(response)
+    return ExperimentSpec(**parsed), llm_cost
 
 if __name__=="__main__":
-    spec=plan_experiment(
+    spec, cost = plan_experiment(
         "Does using a smaller batch size lead to noisier but faster-converging training loss?"
     )
     print(spec.model_dump_json(indent=2))
-
-
-
+    print(f"--- LLM COST (Planner) ---\n{cost}")
