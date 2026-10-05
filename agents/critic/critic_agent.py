@@ -4,11 +4,16 @@ from memory.trajectory_store.llm_cost import extract_llm_cost
 def basic_sanity_check(sandbox_result:dict)->dict:
     exit_code=sandbox_result.get("exit_code")
     output=sandbox_result.get("output","")
+    if exit_code == -2:
+        runaway_info = sandbox_result.get("runaway_info", {})
+        repeated = runaway_info.get("repeated_line", "unknown")
+        nan_note = " (nan/inf-related)" if runaway_info.get("nan_related") else ""
+        return {"passed": False, "reason": f"Code was killed early for a runaway/stuck loop{nan_note} -- the same line repeated many times with no new output: '{repeated}'. Fix the underlying issue causing the loop to not progress (e.g. numerical instability, an unbounded/non-converging loop, or a missing break condition)."}
     if exit_code!=0:
         return {"passed":False,"reason":f"Non-zero exit code: {exit_code}. Output: {output.strip()[:200]}"}
     if not output.strip():
         return {"passed": False, "reason": "Script ran successfully but produced no output at all."}
-    
+
     crash_signatures = ["Traceback (most recent call last)"]
     if any(sig in output for sig in crash_signatures):
         return {"passed": False, "reason": f"Output contains a raw traceback, indicating an unhandled crash: {output.strip()[:200]}"}
