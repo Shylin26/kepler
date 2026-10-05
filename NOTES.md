@@ -777,7 +777,7 @@ nature.
 **Remaining:** 2 of 6 call sites still need num_ctx=32768: Analyst's
 analyze_result() and Planner's plan_experiment() (deferred separately due
 to its ExperimentSpec return-type complication). Tracked in #16.
-## [date] — Fixed Ollama context-truncation for Analyst's analyze_result()
+## [5 October 2026] — Fixed Ollama context-truncation for Analyst's analyze_result()
 
 **What broke (was still exposed):** No options dict at all (same as
 Director before its fix) -- ran on Ollama's ~4096 default. Highest-risk
@@ -810,7 +810,7 @@ Remaining: Planner's plan_experiment() -- deliberately deferred, more
 invasive fix due to its Pydantic ExperimentSpec return type used broadly
 via spec.model_dump() and in a list comprehension in run_loop.py's __main__.**
 
-## [date] — Added num_ctx=32768 to Planner's plan_experiment() (6/6 call sites now fixed)
+## [5 October 2026] — Added num_ctx=32768 to Planner's plan_experiment() (6/6 call sites now fixed)
 
 **What broke (was still exposed):** No options dict, same pattern as
 Director/Analyst before their fixes. Added for consistency.
@@ -841,7 +841,7 @@ truncation fix. Worth its own issue.
 **Status: All 6 of 6 ollama.generate() call sites now have num_ctx=32768.
 Issue #16 can be closed.**
 
-## [date] — Threaded LLM cost tracking through Planner's plan_experiment()
+## [5 October 2026 ] — Threaded LLM cost tracking through Planner's plan_experiment()
 
 **The decision, finally made:** plan_experiment() now returns
 (ExperimentSpec, cost) tuple, matching Coder/Director's pattern -- chosen
@@ -874,3 +874,8 @@ a regression.
 
 **Status: All 5 agents (Coder, Critic, Director x2, Analyst, Planner) now
 have LLM cost tracking wired in and verified.**
+
+
+
+
+
