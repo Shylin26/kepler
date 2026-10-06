@@ -875,7 +875,50 @@ a regression.
 **Status: All 5 agents (Coder, Critic, Director x2, Analyst, Planner) now
 have LLM cost tracking wired in and verified.**
 
+## [6 October 2026] — Real semantic hypothesis dedup (issue #5), not a prompt-level hack
 
+**The problem:** find_or_create_hypothesis() only ever did exact-text
+matching -- a single character difference, rewording, or rephrasing
+created a duplicate Hypothesis node. A previous prompt-level LLM attempt
+at semantic dedup was tried earlier and didn't work reliably (per original
+project notes) -- deliberately did NOT retry that same approach without
+understanding why it failed.
+
+**The real fix:** sentence-transformers (all-MiniLM-L6-v2, 384-dim, ~80MB,
+CPU-only, already installed in the venv) + cosine similarity, genuinely
+semantic, not lexical overlap. find_or_create_hypothesis() now:
+1. Checks exact-text match first (fast-path, free correctness).
+2. Falls back to semantic similarity against existing hypotheses that have
+   a stored embedding -- threshold=0.75 (a judgment call, see below).
+3. New hypotheses get their embedding computed once and stored on the
+   Hypothesis node, so future comparisons don't need to re-embed them.
+
+**Threshold choice:** 0.75, based on one real calibration check before
+building: a genuinely reworded, same-meaning pair scored 0.81; a
+genuinely different-topic pair scored 0.30. Wide gap, but this is a
+starting point from one data point, not empirically tuned against a
+broad real dataset -- may need adjusting as more real data accumulates.
+
+**Real scope boundary, not an oversight:** pre-existing Hypothesis nodes
+(created before this feature) have no stored embedding and are correctly
+excluded from semantic matching -- they're invisible to dedup until
+backfilled. Confirmed 5 such old nodes exist in the graph (topic_area=None,
+predate the topic_area field entirely). Left as-is, not deleted -- real
+historical data, harmless, doesn't block or contaminate the new feature.
+Backfilling them is a separate, deliberate follow-up, not done here.
+
+**Verification:** tests/test_semantic_hypothesis_dedup.py, against real
+Neo4j + real embeddings, no mocking. Confirmed: exact-text duplicate
+caught via fast-path; a genuinely reworded hypothesis (0.81 similarity)
+correctly matched as duplicate; a genuinely different hypothesis (L1 vs
+L2 regularization, unrelated to batch size) correctly NOT matched.
+
+**Real bug caught during development:** initial test runs collided with
+hardcoded hypothesis text reused as a fixture earlier in today's session
+-- caused false matches against stale, embedding-less nodes, not a flaw
+in the dedup logic itself. Root-caused properly (traced through exact-match
+fast-path behavior on contaminated data) before fixing, rather than
+guessing. Fixed by tagging test
 
 
 
