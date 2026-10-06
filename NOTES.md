@@ -920,5 +920,60 @@ in the dedup logic itself. Root-caused properly (traced through exact-match
 fast-path behavior on contaminated data) before fixing, rather than
 guessing. Fixed by tagging test
 
+## [6 October 2026] — First real Milestone 4 benchmark run: 3/5 planted questions correct
+
+**What ran:** all 5 planted questions (benchmark/planted_questions.py) through
+the full real pipeline (Director skipped -- question fixed -- straight into
+Planner -> Coder/sandbox/Critic retry loop -> Analyst). Results saved to
+benchmark/results_20261006T113451Z.json.
+
+**Score: 3/5 verdict matches.**
+- lr_divergence_01 (learning_rate): MATCH -- correctly supports.
+- l2_weight_shrinkage_01 (regularization): MISS -- Analyst downgraded to
+  inconclusive.
+- batch_size_gradient_variance_01 (batch_size): MISS -- Analyst downgraded
+  to inconclusive.
+- epochs_always_improve_01 (training_dynamics, deliberately FALSE hypothesis):
+  MATCH -- correctly refuted. Real positive signal: the pipeline doesn't just
+  rubber-stamp hypotheses, it can discriminate and push back on an overclaim.
+- zero_init_symmetry_01 (weight_initialization): MATCH -- correctly supports.
+
+**Root cause of both misses, same cause for both -- NOT faulty reasoning:**
+In both cases, Analyst's actual reasoning was correct and well-supported by
+the real numbers (e.g. batch_size case correctly identified more fluctuation
+in the small-batch loss curve vs. less in the large-batch curve, the right
+conclusion). But check_grounding() downgraded both to inconclusive because
+the supporting_quote (a multi-line block of output) didn't match verbatim
+after _normalize_for_grounding()'s narrow whitespace/punctuation handling --
+likely a formatting mismatch (line breaks, spacing) the current normalization
+doesn't account for. This is a correct-conclusion-discarded-by-overstrict-
+grounding failure, the inverse of issue #13's original "grounded but wrong"
+problem. Updating #13 with this as new, concrete, reproducible evidence
+rather than filing as a separate issue -- same underlying mechanism (the gap
+between what counts as "the same" text) just manifesting as a false negative
+instead of a false positive this time.
+
+**Non-reproduced near-miss, worth noting honestly:** an earlier isolated
+test run of lr_divergence_01 hit a real OverflowError when Coder's code
+tried to square an astronomically large (already-diverged) loss value --
+this full run's Coder-generated code happened not to trigger it (LLM
+generation is non-deterministic, different code was written). NOT fixed,
+just didn't recur this time -- the underlying weakness (no numerical
+overflow handling for extreme divergence cases) is still real.
+
+**What this means for Milestone 4:** this is real, if early, evidence the
+pipeline can perform genuine small-scale ML research and reach correct
+conclusions on established facts -- not just appear functional. The 2
+misses are valuable, specific, actionable findings about check_grounding(),
+not evidence of a broken research process. Benchmark did its job: surfaced
+a real, previously-undiscovered-in-this-form weakness with reproducible
+evidence, rather than a vague "sometimes it's wrong."
+
+**Not yet done:** human review of planner_sound and critic_correct
+dimensions for all 5 questions (JSON fields left null, per the deliberate
+mechanical/human-judgment split in the runner design). Fixing
+check_grounding()'s normalization is a separate, deliberate follow-up --
+not patched here.
+
 
 

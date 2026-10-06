@@ -1,0 +1,122 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 10 iterations of stochastic gradient descent (SGD) for linear regression with synthetic data. Use one set of parameters with a well-tuned learning rate and another set with an extremely high learning rate. Print the loss value after each iteration for both sets.",
+    "planner_hypothesis": "Using an extremely high learning rate causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": true,
+    "attempts": 1,
+    "analyst_verdict": "supports",
+    "analyst_reasoning": "The loss values for Theta 1 and Theta 2 are extremely high and rapidly increasing, indicating that the model is diverging.",
+    "verdict_match": true,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task asks for both sets of parameters to be used as originally stated, including the extremely high learning rate that will cause overflow. The code correctly simulates SGD with both parameter sets and prints the loss values after each iteration."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "l2_weight_shrinkage_01",
+    "mechanism": "regularization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 100 iterations of stochastic gradient descent for a linear regression model with both L2 regularization and no regularization. Initialize weights randomly and use synthetic data generated from a true linear relationship. Print the magnitude of the weights at each iteration for both models.",
+    "planner_hypothesis": "Adding L2 regularization reduces the magnitude of learned weights compared to training without regularization on a simple linear regression task with the same data and number of training steps.",
+    "coder_sandbox_valid": true,
+    "attempts": 2,
+    "analyst_verdict": "inconclusive",
+    "analyst_reasoning": "[DOWNGRADED: Quote not found verbatim (even after normalization) in output: 'inconclusive'] Original reasoning: The experiment does not provide a direct comparison of weight magnitudes with and without L2 regularization. The weights themselves are not provided in a format that allows for an apples-to-apples comparison.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The code avoids the error condition by multiplying the gradient slope and intercept by a factor that results in very large values, leading to numerical instability and NaN (Not a Number) outputs."
+      },
+      {
+        "attempt": 2,
+        "reason": "The task does not describe any guaranteed error conditions that should be triggered and handled. The code runs as expected without triggering errors."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "batch_size_gradient_variance_01",
+    "mechanism": "batch_size",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate the training of a simple linear model on synthetic data using both a small and a large batch size. For each batch size, perform 5 epochs of stochastic gradient descent (SGD) and print the average loss per epoch.",
+    "planner_hypothesis": "A larger batch size reduces the variance of gradient estimates, leading to smoother loss curves compared to a smaller batch size.",
+    "coder_sandbox_valid": true,
+    "attempts": 2,
+    "analyst_verdict": "inconclusive",
+    "analyst_reasoning": "[DOWNGRADED: Quote not found verbatim (even after normalization) in output: 'Batch size 32, Epoch 1, Avg Loss: 91.7677\nBatch size 32, Epoch 2, Avg Loss: 78.2924\nBatch size 32, E'] Original reasoning: The loss values for both batch sizes are decreasing over epochs, indicating convergence. However, the small batch size shows more fluctuation between epochs (e.g., Epoch 1: 91.7677 vs Epoch 5: 52.1695), while the large batch size shows less fluctuation (e.g., Epoch 1: 5.2305 vs Epoch 5: 5.1099). This suggests that a larger batch size leads to smoother loss curves compared to a smaller batch size.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 37, in <module>\nNameError: name 'batch_size' is not defined"
+      },
+      {
+        "attempt": 2,
+        "reason": "The task does not guarantee any error conditions that need to be triggered and handled. The code correctly simulates training a linear model with both small and large batch sizes using stochastic gradient descent (SGD) without attempting to avoid or handle any guaranteed errors."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "epochs_always_improve_01",
+    "mechanism": "training_dynamics",
+    "ground_truth_verdict": "refutes",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of gradient descent for linear regression on synthetic data. Print the value of the loss before and after the epoch.",
+    "planner_hypothesis": "Increasing the number of training epochs always decreases final training loss on a simple linear regression task.",
+    "coder_sandbox_valid": true,
+    "attempts": 2,
+    "analyst_verdict": "refutes",
+    "analyst_reasoning": "The final loss (2608.27509350384) is higher than the initial loss (1473.0299789910582), which refutes the hypothesis that increasing the number of training epochs always decreases final training loss.",
+    "verdict_match": true,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task asks for one epoch of gradient descent simulation without a guaranteed error condition that should be triggered and handled. The code provided does not contain any condition that is guaranteed to cause an error, so it adheres to the task requirements."
+      },
+      {
+        "attempt": 2,
+        "reason": "The task does not describe any guaranteed error condition that should be triggered and handled. The code runs without crashing and completes the task as stated."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, implement a 2-layer neural network on synthetic data with both weight initialization strategies (zero and small random values). Train each for one epoch using mean squared error loss. Print the final loss for each initialization method.",
+    "planner_hypothesis": "Initializing all weights to zero prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": true,
+    "attempts": 3,
+    "analyst_verdict": "supports",
+    "analyst_reasoning": "The final loss with zero-initialized weights (0.9809497388313314) is slightly higher than the final loss with randomly initialized weights (0.9808031436886356), which suggests that initializing weights to zero may not prevent the network from learning effectively.",
+    "verdict_match": true,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 37, in <module>\n  File \"<string>\", line 37, in <listcomp>\n  File \"<string>\", line 21, in sigmoid\nNameError: name 'math' is not defined"
+      },
+      {
+        "attempt": 2,
+        "reason": "The task does not describe any guaranteed error condition that should be triggered and handled. The code correctly implements a simple 2-layer neural network without avoiding any errors."
+      },
+      {
+        "attempt": 3,
+        "reason": "The task does not describe any guaranteed error condition that should be triggered and handled. Both weight initialization strategies (zero and small random values) are used to train a neural network on synthetic data, and the code correctly implements the training process for each strategy."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]

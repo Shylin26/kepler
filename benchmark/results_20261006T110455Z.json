@@ -1,0 +1,30 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 5 epochs of stochastic gradient descent for a linear regression model with one feature. Generate synthetic data for the model where the true weight is 2 and bias is -1. Use a well-tuned learning rate (0.01) and an extremely high learning rate (101x as much). Print the loss after each epoch for both learning rates.",
+    "planner_hypothesis": "Using an extremely high learning rate (100x higher than a well-tuned value) causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 47, in <module>\n  File \"<string>\", line 44, in main\n  File \"<string>\", line 29, in stochastic_gradient_descent\n  File \"<string>\", line 17, in"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 46, in <module>\n  File \"<string>\", line 43, in main\n  File \"<string>\", line 28, in stochastic_gradient_descent\n  File \"<string>\", line 16, in"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Tuned Learning Rate:\nEpoch 0, Loss: 1.6711165253798697\nEpoch 1, Loss: 1.241354830468469\nEpoch 2, Loss: 1.1394652356646342\nEpoch 3, Loss: 1.1096941492722108\nEpoch 4, Loss: 1.0996135864643493\n\nHigh Lear"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
