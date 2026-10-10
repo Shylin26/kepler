@@ -51,6 +51,7 @@ Respond with ONLY a JSON object in this exact format:
             return {
                 "verdict": "inconclusive",
                 "reasoning": f"[DOWNGRADED: {grounding['reason']}] Original reasoning: {reasoning}",
+                "rejected_quote": quote,
                 "llm_cost": llm_cost,
             }
         direction_check = check_numeric_direction(reasoning)

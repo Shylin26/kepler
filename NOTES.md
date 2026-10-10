@@ -974,6 +974,43 @@ dimensions for all 5 questions (JSON fields left null, per the deliberate
 mechanical/human-judgment split in the runner design). Fixing
 check_grounding()'s normalization is a separate, deliberate follow-up --
 not patched here.
+## [10 october 2026] -- CORRECTION to the first benchmark entry: root cause of the 2 misses
 
+**What the earlier entry got wrong:** it attributed both misses to
+check_grounding() failing on multi-line quote normalization. That was an
+unverified guess made from truncated error messages. It is wrong.
+
+**What was actually checked:**
+- A reconstructed multi-line quote passed _normalize_for_grounding() fine
+  (newlines collapse to spaces on both sides). No normalization gap found.
+- Added "rejected_quote" to the grounding-downgrade return in
+  analyze_result() and replayed the real batch-size sandbox output 5 times
+  (tests/debug_batch_quote.py). 3/5 runs were rejected, 2/5 accepted.
+- All 3 rejected quotes were SPLICES: the model joined excerpts from the
+  small-batch and large-batch sections into one "quote", skipping the
+  "Training with large batch size (1024):" header (or joining Epoch 5 lines
+  from two places). That text is not contiguous in the output, so the
+  grounding check was correct to reject it.
+- The 2 accepted runs quoted one contiguous block and reached "supports".
+
+**batch_size_gradient_variance_01:** root cause is the prompt asking for ONE
+verbatim substring when the comparison needs evidence from two places. The
+original benchmark miss is consistent with this but its exact quote was not
+saved, so it is not proven for that specific run.
+
+**l2_weight_shrinkage_01:** separate cause. The quote was the literal word
+"inconclusive": the Analyst declined to quote. Planner's task (print weight
+magnitude for 100 iterations x 2 models) produced output that is hard to
+quote. Not a grounding bug.
+
+**Not the fix:** loosening _normalize_for_grounding(). It would stop
+catching spliced (fabricated) quotes, which is what the check exists for.
+
+**Planned fix:** let the Analyst return multiple supporting_quotes, each
+grounded independently; any ungrounded quote still downgrades. Keep
+supporting_quote for backward compatibility. Needs a test where a spliced
+quote must still be rejected.
+
+**Kept:** "rejected_quote" in the downgrade return (diagnostic).
 
 
