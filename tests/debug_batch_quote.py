@@ -22,7 +22,8 @@ for i in range(5):
         output,
     )
     print(f"--- run {i+1}: verdict={r['verdict']} ---")
-    if "rejected_quote" in r:
-        print("REJECTED QUOTE:", repr(r["rejected_quote"]))
+    print("REASONING:", r.get("reasoning"))
+    if "rejected_quotes" in r:
+        print("REJECTED QUOTES:", repr(r["rejected_quotes"]))
     else:
-        print("quote accepted:", repr(r.get("supporting_quote")))
+        print("quotes accepted:", repr(r.get("supporting_quotes")))

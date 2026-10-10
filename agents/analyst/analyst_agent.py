@@ -25,13 +25,17 @@ Actual experiment output:
 Be skeptical and precise. Do not assume the hypothesis is true just because
 the code ran successfully -- look at the actual numbers.
 
-You must support your verdict with a DIRECT QUOTE copied exactly, character-
-for-character, from the actual experiment output above. Do not paraphrase or
-summarize the quote -- copy it verbatim. If you cannot find a exact substring
-in the output that supports your verdict, you must respond with "inconclusive".
+You must support your verdict with DIRECT QUOTES copied exactly, character-
+for-character, from the actual experiment output above. Each quote must be a
+single contiguous piece of the output. Do NOT join lines from different places
+into one quote. If your reasoning needs evidence from two places (for example
+two different sections), give each as a separate quote in the list. Do not
+paraphrase or summarize. If you cannot find exact substrings in the output
+that support your verdict, you must respond with "inconclusive" as the verdict
+and an empty list for supporting_quotes.
 
 Respond with ONLY a JSON object in this exact format:
-{{"verdict": "supports" or "refutes" or "inconclusive", "reasoning": "one to two sentence explanation", "supporting_quote": "exact verbatim substring copied from the output above"}}
+{{"verdict": "supports" or "refutes" or "inconclusive", "reasoning": "one to two sentence explanation", "supporting_quotes": ["exact verbatim substring 1", "exact verbatim substring 2"]}}
 """
 
     response = ollama.generate(model=model, prompt=prompt, options={"num_ctx": 32768})
@@ -44,14 +48,26 @@ Respond with ONLY a JSON object in this exact format:
         parsed = json.loads(raw[start:end])
         verdict = parsed.get("verdict", "inconclusive")
         reasoning = parsed.get("reasoning", "No reasoning given.")
-        quote = parsed.get("supporting_quote", "")
 
-        grounding = check_grounding(quote, output)
+        quotes = parsed.get("supporting_quotes")
+        if quotes is None:
+            # Backward compatibility: model returned the old single-quote key
+            single = parsed.get("supporting_quote", "")
+            quotes = [single] if single else []
+        if isinstance(quotes, str):
+            quotes = [quotes]
+        quote = quotes[0] if quotes and isinstance(quotes[0], str) else ""
+
+        if verdict == "inconclusive" and not quotes:
+            grounding = {"grounded": True, "reason": None}
+        else:
+            grounding = check_grounding_multi(quotes, output)
+
         if not grounding["grounded"]:
             return {
                 "verdict": "inconclusive",
                 "reasoning": f"[DOWNGRADED: {grounding['reason']}] Original reasoning: {reasoning}",
-                "rejected_quote": quote,
+                "rejected_quotes": quotes,
                 "llm_cost": llm_cost,
             }
         direction_check = check_numeric_direction(reasoning)
@@ -64,6 +80,7 @@ Respond with ONLY a JSON object in this exact format:
             "verdict": verdict,
             "reasoning": reasoning,
             "supporting_quote": quote,
+            "supporting_quotes": quotes,
             "direction_check": direction_check,
             "generalization_check": generalization_check,
             "llm_cost": llm_cost,
@@ -94,6 +111,24 @@ def check_grounding(supporting_quote: str, output: str) -> dict:
     if _normalize_for_grounding(quote_clean) in _normalize_for_grounding(output):
         return {"grounded": True, "reason": None}
     return {"grounded": False, "reason": f"Quote not found verbatim (even after normalization) in output: '{quote_clean[:100]}'"}
+
+def check_grounding_multi(supporting_quotes: list, output: str) -> dict:
+    """Ground each quote independently. Every quote must be a (normalized)
+    contiguous substring of the output on its own. One ungrounded quote
+    fails the whole set, so a spliced quote is rejected exactly as before.
+    Deliberately does NOT loosen normalization."""
+    if not supporting_quotes:
+        return {"grounded": False, "reason": "No supporting quotes provided."}
+    for q in supporting_quotes:
+        if not isinstance(q, str):
+            return {"grounded": False, "reason": f"Quote is not a string: {q!r}"}
+        q_clean = q.strip()
+        if len(q_clean) >= 2 and q_clean[0] == q_clean[-1] and q_clean[0] in "\"'":
+            q_clean = q_clean[1:-1]
+        result = check_grounding(q_clean, output)
+        if not result["grounded"]:
+            return result
+    return {"grounded": True, "reason": None}
 
 def check_numeric_direction(reasoning: str) -> dict:
     """Heuristic check: if reasoning text contains an explicit numeric
