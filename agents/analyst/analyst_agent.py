@@ -73,7 +73,7 @@ Respond with ONLY a JSON object in this exact format:
         direction_check = check_numeric_direction(reasoning)
         if direction_check["checked"] and not direction_check["consistent"]:
             print(f"--- WARNING: possible numeric direction inconsistency in Analyst reasoning: {direction_check['reason']} ---")
-        generalization_check = check_generalization_scope(reasoning, quote, output)
+        generalization_check = check_generalization_scope(reasoning, quotes, output)
         if generalization_check["checked"] and generalization_check.get("possible_cherry_pick"):
             print(f"--- WARNING: possible cherry-picking in Analyst reasoning: {generalization_check['reason']} ---")
         return {
@@ -173,46 +173,57 @@ def check_numeric_direction(reasoning: str) -> dict:
         "reason": None if consistent else f"Reasoning claims '{claimed_direction}' but first two numbers found ({a} then {b}) are actually {actual_direction} in that order.",
     }
 
-def check_generalization_scope(reasoning: str, quote: str, output: str) -> dict:
+def check_generalization_scope(reasoning: str, quotes, output: str) -> dict:
     """Heuristic check: if reasoning uses universal/consistency language
     (e.g. 'consistently', 'across all', 'every case') while the quoted
-    evidence represents only one of several structurally similar data
-    points in the real output, flag it as a possible cherry-pick.
+    evidence covers only some of the structurally similar data points in
+    the real output, flag it as a possible cherry-pick.
 
-    Does NOT determine whether the generalization is actually true --
-    only whether the Analyst appears to have looked at all comparable
-    evidence before making a universal claim. A pass here is not proof
-    the reasoning is correct, only that it isn't obviously cherry-picked
-    by this narrow test.
-    """
+    `quotes` is a list of quote strings (a single string is also accepted).
+    Counts how many sibling lines the quotes cover in total. Does NOT
+    determine whether the generalization is true -- only whether the
+    Analyst appears to have cited all comparable evidence. A pass is not
+    proof the reasoning is correct."""
     UNIVERSAL_WORDS = ["consistently", "across all", "every case", "in every",
                         "all seeds", "all cases", "always", "invariably",
                         "without exception", "in all"]
 
     text_lower = reasoning.lower()
-    uses_universal_language = any(w in text_lower for w in UNIVERSAL_WORDS)
-    if not uses_universal_language:
+    used = [w for w in UNIVERSAL_WORDS if w in text_lower]
+    if not used:
         return {"checked": False, "reason": "No universal/consistency language found in reasoning."}
 
-    quote_clean = quote.strip()
-    if not quote_clean:
+    if isinstance(quotes, str):
+        quotes = [quotes]
+    quote_lines = []
+    for q in quotes or []:
+        if isinstance(q, str):
+            quote_lines.extend(l.strip() for l in q.split("\n") if l.strip())
+    if not quote_lines:
         return {"checked": False, "reason": "No quote to compare against."}
 
     def template(line):
         return re.sub(r"-?\d+\.?\d*", "N", line.strip())
 
-    quote_template = template(quote_clean)
+    quote_templates = {template(l) for l in quote_lines}
+    quoted_set = set(quote_lines)
     output_lines = [l for l in output.split("\n") if l.strip()]
-    sibling_lines = [l for l in output_lines if template(l) == quote_template]
+    sibling_lines = [l for l in output_lines if template(l) in quote_templates]
 
     if len(sibling_lines) < 2:
         return {"checked": False, "reason": "No structurally similar sibling lines found in output -- nothing to compare against."}
 
+    covered = sum(1 for l in sibling_lines if l.strip() in quoted_set)
+    if covered >= len(sibling_lines):
+        return {"checked": True, "possible_cherry_pick": False, "reason": None,
+                "sibling_count": len(sibling_lines), "covered_count": covered}
+
     return {
         "checked": True,
         "possible_cherry_pick": True,
-        "reason": f"Reasoning uses universal language ('{[w for w in UNIVERSAL_WORDS if w in text_lower][0]}') but only cites 1 of {len(sibling_lines)} structurally similar data points in the output.",
+        "reason": f"Reasoning uses universal language ('{used[0]}') but quotes cover only {covered} of {len(sibling_lines)} structurally similar data points in the output.",
         "sibling_count": len(sibling_lines),
+        "covered_count": covered,
     }
 
 if __name__ == "__main__":
