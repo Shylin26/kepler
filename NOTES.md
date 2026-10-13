@@ -1058,4 +1058,32 @@ reasoning said "inconsistent with the hypothesis"); no check catches them.
 #21: the direction check reads batch-size/LR labels as result values and
 produced false warnings in about 3 of 5 replay runs.
 
+## [13 October 2026] -- #21: direction-check label fix took two attempts
+
+**Problem:** check_numeric_direction() compared the first two numbers in the
+reasoning, which were often labels (batch sizes 1024 and 32) rather than
+losses. Replays of the batch-size output gave false warnings in 3/5 runs.
+
+**Attempt 1 (b4991ab):** skip numbers that directly follow label words
+(batch size, LR, seed, epoch...). Unit tests passed. Live replay still
+showed false warnings in 2/5 runs, from two causes my tests did not cover:
+- parenthesized labels, as in "batch size (1024)", were not skipped
+- "smaller batch size" was read as a lower-direction claim about the numbers
+
+**Attempt 2 (9b905fb):** allow "(" after label words, and strip phrases like
+"smaller batch size" before searching for direction words. Added tests for
+both cases. Live replay: 0/5 warnings.
+
+**Lesson:** hand-written unit-test sentences missed what real model output
+contained, twice (this and the dedent bug). Replaying real output is part
+of verifying a heuristic, not an optional extra.
+
+**Caveats:** one 5-run batch is weak evidence. Label-word list is finite. A
+value directly after a label word is skipped, so the check can go silent
+(missed warning, never a changed verdict; the check is flag-only).
+
+**Not caught, unexplained:** in the last replay, one run said "consistently
+lower" while citing 4 of 10 lines and did not trigger the cherry-pick
+check. Not debugged.
+
 
