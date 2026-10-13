@@ -1,6 +1,21 @@
 import ollama
 import json
+import re
 from memory.trajectory_store.llm_cost import extract_llm_cost
+
+def _error_summary(output: str) -> str:
+    """Short snippet for retry feedback: the head of the output plus the last
+    exception line, wherever it appears (traceback can be first or last)."""
+    out = output.strip()
+    if len(out) <= 400:
+        return out
+    err_lines = [l.strip() for l in out.split("\n")
+                 if re.match(r"^\w*(Error|Exception)\b", l.strip())]
+    head = out[:200]
+    if err_lines and err_lines[-1] not in head:
+        return f"{head} ... [exception: {err_lines[-1][:200]}]"
+    return head
+
 def basic_sanity_check(sandbox_result:dict)->dict:
     exit_code=sandbox_result.get("exit_code")
     output=sandbox_result.get("output","")
@@ -10,13 +25,13 @@ def basic_sanity_check(sandbox_result:dict)->dict:
         nan_note = " (nan/inf-related)" if runaway_info.get("nan_related") else ""
         return {"passed": False, "reason": f"Code was killed early for a runaway/stuck loop{nan_note} -- the same line repeated many times with no new output: '{repeated}'. Fix the underlying issue causing the loop to not progress (e.g. numerical instability, an unbounded/non-converging loop, or a missing break condition)."}
     if exit_code!=0:
-        return {"passed":False,"reason":f"Non-zero exit code: {exit_code}. Output: {output.strip()[:200]}"}
+        return {"passed":False,"reason":f"Non-zero exit code: {exit_code}. Output: {_error_summary(output)}"}
     if not output.strip():
         return {"passed": False, "reason": "Script ran successfully but produced no output at all."}
 
     crash_signatures = ["Traceback (most recent call last)"]
     if any(sig in output for sig in crash_signatures):
-        return {"passed": False, "reason": f"Output contains a raw traceback, indicating an unhandled crash: {output.strip()[:200]}"}
+        return {"passed": False, "reason": f"Output contains a raw traceback, indicating an unhandled crash: {_error_summary(output)}"}
 
     return {"passed": True, "reason": "Passed basic sanity checks."}
 
