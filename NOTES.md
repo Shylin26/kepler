@@ -1117,3 +1117,13 @@ the exception line at the end of a traceback.
 Q4 as a v2 and keep v1 on record, and score with a stricter rubric: a pass
 needs both a sound experiment and a matching verdict.
 
+## [13 October 2026] -- Addendum: fourth full benchmark run
+
+Four full runs now: 3/5, 1/5, 1/5, 0/5 verdict matches. The fourth
+(results_20261013T112616Z.json, log run_log_20261013T163212.txt) had 4 of 5
+sandbox failures. No attempt was killed by the runaway detector, and no
+other benchmark process was running. The failures were Coder bugs
+(OverflowError, NameError, list-comprehension errors). Critic feedback keeps
+only 200 characters of output, so Coder often could not see the exception
+line. Not shown to be the cause of the failures. Numbers are not an
+accuracy rate.
