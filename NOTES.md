@@ -1085,5 +1085,35 @@ value directly after a label word is skipped, so the check can go silent
 **Not caught, unexplained:** in the last replay, one run said "consistently
 lower" while citing 4 of 10 lines and did not trigger the cherry-pick
 check. Not debugged.
+## [13 October 2026] -- CORRECTION: benchmark scores and the "pipeline discriminates" claim
 
+**Two runs, not one:** on Oct 13 two benchmark runs overlapped and both
+wrote to benchmark/run_log_after_analyst_fixes.txt, so that log interleaves
+them. Use the results_*.json files, not the log, to attribute outcomes.
+
+**Verdict matches across three full runs:** 3/5 (Oct 6), 1/5, 1/5. Of 15
+question-runs, 5 hit sandbox failure before the Analyst. Q2, Q3 and Q4
+changed outcome between runs on the same question. No accuracy rate is
+claimed; one run per question is mostly noise.
+
+**Withdrawn:** the first benchmark entry's claim that the pipeline
+discriminates, based on epochs_always_improve_01 being refuted.
+- That run's code computed yi - prediction and then subtracted the gradient
+  (gradient ascent). Loss rose because of a bug; the match was probably
+  accidental. Both later runs said "supports".
+- The question is ill-posed: with a stable learning rate, training loss does
+  fall with more epochs, and "refutes" depends on an instability the
+  question never states.
+- Other first-run matches were also doubtful: Q5's network had a single
+  output layer so the symmetry argument did not apply (and the Analyst's
+  reasoning contradicted its verdict); Q1's tuned learning rate also diverged.
+
+**Causes seen so far:** OverflowError on diverging experiments (Q1),
+list-vs-numpy errors such as '.dot' on lists (Q5, from the log, run not
+identified), and Critic retry feedback cut to 200 characters, which drops
+the exception line at the end of a traceback.
+
+**Next:** keep the tail of tracebacks in Critic feedback (tested), rewrite
+Q4 as a v2 and keep v1 on record, and score with a stricter rubric: a pass
+needs both a sound experiment and a matching verdict.
 
