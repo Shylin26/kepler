@@ -1,0 +1,118 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of stochastic gradient descent (SGD) for a simple linear regression model with a well-tuned learning rate and once with an extremely high learning rate. Print the mean squared error at each iteration for both runs.",
+    "planner_hypothesis": "Using an extremely high learning rate causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 32, in <module>\n  File \"<string>\", line 20, in sgd_linear_regression\n  File \"<string>\", line 20, in <genexpr>\nOverflowError: (34, 'Numerical "
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 32, in <module>\n  File \"<string>\", line 20, in sgd_linear_regression\n  File \"<string>\", line 20, in <genexpr>\nOverflowError: (34, 'Numerical "
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 31, in <module>\n  File \"<string>\", line 19, in sgd_linear_regression\n  File \"<string>\", line 19, in <genexpr>\nOverflowError: (34, 'Numerical "
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "l2_weight_shrinkage_01",
+    "mechanism": "regularization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 100 steps of gradient descent for a simple linear regression task with and without L2 regularization. Print the final weight values for both cases.",
+    "planner_hypothesis": "Adding L2 regularization reduces the magnitude of learned weights compared to training without regularization on a simple linear regression task.",
+    "coder_sandbox_valid": true,
+    "attempts": 1,
+    "analyst_verdict": "supports",
+    "analyst_reasoning": "The final weight with L2 regularization (-0.9731072553112198) has a larger magnitude in absolute value compared to the final weight without L2 regularization (-0.6465264498903369).",
+    "verdict_match": true,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task does not specify any guaranteed error conditions that should be triggered and handled. The code correctly implements both gradient descent with and without L2 regularization."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "batch_size_gradient_variance_01",
+    "mechanism": "batch_size",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate the training process for a simple linear regression model using two different batch sizes (small: 10, large: 50). Generate synthetic data and use stochastic gradient descent to minimize the mean squared error. Print the loss after each epoch for both batch sizes.",
+    "planner_hypothesis": "Using a larger batch size reduces the variance of gradient estimates compared to a smaller batch size when training a model on the same synthetic dataset.",
+    "coder_sandbox_valid": true,
+    "attempts": 1,
+    "analyst_verdict": "inconclusive",
+    "analyst_reasoning": "The loss curves for both batch sizes are very similar, with the large batch size not showing significantly less noisy results.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task specifies both small and large batch sizes, which do not inherently cause any guaranteed errors. The code correctly simulates the training process for a simple linear regression model using these two different batch sizes."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "epochs_always_improve_01",
+    "mechanism": "training_dynamics",
+    "ground_truth_verdict": "refutes",
+    "planner_task_description": "Simulate training a linear model for a simple linear regression task using synthetic data. Train the model for increasing numbers of epochs (e.g., 10, 20, 30 epochs) and record the final loss for each run. Use random data generation for both the input features and target values.",
+    "planner_hypothesis": "Increasing the number of training epochs always decreases final training loss, with no risk of overfitting or instability, on a simple linear regression task.",
+    "coder_sandbox_valid": true,
+    "attempts": 1,
+    "analyst_verdict": "supports",
+    "analyst_reasoning": "The final loss decreases with more epochs up to 30, which supports the hypothesis that increasing the number of training epochs always decreases final training loss.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task does not describe any guaranteed error condition that should be triggered and handled."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate 5 epochs of training a simple 2-layer neural network on synthetic data using both zero-initialized and randomly initialized weights. Calculate and print the mean squared error loss per epoch for each set of initial weights.",
+    "planner_hypothesis": "Initializing all weights to zero instead of small random values prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 47, in <module>\n  File \"<string>\", line 25, in train_network\n  File \"<string>\", line 25, in <listcomp>\nIndexError: list index out of range"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 50, in <module>\n  File \"<string>\", line 27, in train_network\n  File \"<string>\", line 27, in <listcomp>\nIndexError: list index out of range"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 50, in <module>\n  File \"<string>\", line 27, in train_network\n  File \"<string>\", line 27, in <listcomp>\nIndexError: list index out of range"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
