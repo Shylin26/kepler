@@ -148,7 +148,7 @@ def check_numeric_direction(reasoning: str) -> dict:
 
     # A number is a label if it directly follows one of these words/tokens.
     LABEL_PREFIX = re.compile(
-        r"(?:batch(?:\s+size)?|size|lr|learning\s+rate|seed|epoch|iteration|step|layer|run|trial)\s*[=:]?\s*$",
+        r"(?:batch(?:\s+size)?|size|lr|learning\s+rate|seed|epoch|iteration|step|layer|run|trial)\s*[=:(]?\s*$",
         re.IGNORECASE,
     )
 
@@ -162,7 +162,9 @@ def check_numeric_direction(reasoning: str) -> dict:
     if len(numbers) < 2:
         return {"checked": False, "reason": "Fewer than 2 result numbers found in reasoning (label numbers skipped)."}
 
-    text_lower = reasoning.lower()
+    text_lower = re.sub(
+        r"\b(?:higher|lower|larger|smaller|greater|bigger)\s+(?:batch(?:\s+size)?|learning\s+rate|lr|seed|epoch)s?\b",
+        "", reasoning.lower())
     found_higher = any(w in text_lower for w in HIGHER_WORDS)
     found_lower = any(w in text_lower for w in LOWER_WORDS)
 

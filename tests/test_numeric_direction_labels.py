@@ -25,9 +25,22 @@ def test_correct_comparison_passes():
     r = check_numeric_direction("The score of 0.91 is higher than 0.89.")
     assert r["checked"] is True and r["consistent"] is True
 
+def test_parenthesized_labels_ignored():
+    r = check_numeric_direction(
+        "The loss for the larger batch size (1024) is lower than for the smaller batch size (32).")
+    assert r["checked"] is False or r["consistent"] is True
+
+def test_direction_word_describing_batch_not_a_claim():
+    r = check_numeric_direction(
+        "The loss curves for the larger batch size (Epoch 1: 5.2305, Epoch 2: 5.2001) "
+        "are smoother than the smaller batch size (Epoch 1: 91.7677, Epoch 2: 78.2924).")
+    assert r["checked"] is False or r["consistent"] is True
+
 if __name__ == "__main__":
     test_batch_size_labels_ignored()
     test_lr_label_ignored()
     test_real_backwards_comparison_still_caught()
     test_correct_comparison_passes()
+    test_parenthesized_labels_ignored()
+    test_direction_word_describing_batch_not_a_claim()
     print("All numeric-direction label tests passed.")
