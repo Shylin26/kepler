@@ -1014,3 +1014,48 @@ quote must still be rejected.
 **Kept:** "rejected_quote" in the downgrade return (diagnostic).
 
 
+## [13 October 2026] -- Analyst: multi-quote grounding, generalization-check fix, dedent catch
+
+**Background:** the first benchmark entry blamed two misses on multi-line
+normalization (corrected in the entry above). Replays showed the real cause
+for batch_size_gradient_variance_01: the model spliced excerpts from two
+output sections into one "quote", which the substring check correctly
+rejected. The prompt asked for one quote where the comparison needed two.
+
+**Changes (agents/analyst/analyst_agent.py):**
+- Prompt and parser now use supporting_quotes (a list), each a contiguous
+  substring. supporting_quote is still returned (first quote) for
+  backward compatibility.
+- check_grounding_multi() grounds each quote independently; one bad quote
+  fails the set, so splices are still rejected (unit-tested).
+- One pair of wrapping quote characters is stripped before grounding. The
+  model sometimes wrapped quotes in literal "..." and got rejected.
+- An honest "inconclusive" with no quotes is no longer treated as a
+  grounding failure (the l2_weight_shrinkage_01 case, where the model put
+  the word "inconclusive" in the quote field).
+- check_generalization_scope() now takes all quotes and counts coverage of
+  sibling lines, fixing a false "cites 1 of 10" warning I introduced when
+  adding multi-quote support (issue #20, closed).
+
+**Evidence, with caveats:** replaying the batch-size output, rejected quotes
+went from 3/5 before to 1/15 after, and the one remaining rejection was the
+wrapped-quote format, now handled. Correct "supports" verdicts were 2/5
+before and roughly 13/20 after, but samples are small and batches swung
+widely (1/5, 4/5, 3/5, 5/5), so no accuracy gain is claimed. The benchmark
+itself has not been re-run since these changes.
+
+**Near-misses caught in review, not by tests:**
+- A edit deleted the final return of check_grounding_multi (returned None).
+- A mis-indented call put generalization_check inside the direction-check
+  if-block, which would have raised UnboundLocalError whenever the
+  direction check did not fire. Unit tests of the helpers passed anyway.
+  Added tests/test_analyze_result_flow.py (stubbed LLM, end to end) to
+  guard this class of bug.
+
+**Still open:** #13 now has two more grounded-but-wrong cases (a "similar
+losses" refutes where the numbers differ ~10x, and a supports whose
+reasoning said "inconsistent with the hypothesis"); no check catches them.
+#21: the direction check reads batch-size/LR labels as result values and
+produced false warnings in about 3 of 5 replay runs.
+
+
