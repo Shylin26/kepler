@@ -133,23 +133,34 @@ def check_grounding_multi(supporting_quotes: list, output: str) -> dict:
 def check_numeric_direction(reasoning: str) -> dict:
     """Heuristic check: if reasoning text contains an explicit numeric
     comparison (two numbers with a directional word like higher/lower/
-    more/less/greater/smaller between them), verify the claimed direction
-    matches the actual arithmetic relationship between the first two
-    numbers found.
+    more/less/greater/smaller), verify the claimed direction matches the
+    actual arithmetic relationship between the first two RESULT numbers.
 
-    Deliberately narrow -- built to catch the exact failure pattern seen
-    in issue #13 (claiming a lower number is 'higher'), not a general
-    logic checker. Does NOT catch cherry-picking (see #13 B2) or
-    self-contradictory reasoning using both directional word types.
+    Numbers that are labels (e.g. 'batch size 1024', 'LR=0.01', 'seed 3',
+    'epoch 5') are skipped so they aren't mistaken for result values.
+    Deliberately narrow, flag-only. Does NOT catch cherry-picking (see #13
+    B2) or self-contradictory reasoning using both directional word types.
     Returns checked=False when there's nothing clear to check -- that is
     NOT the same as confirming the reasoning is correct.
     """
     HIGHER_WORDS = ["higher", "greater", "more", "increase", "improved", "better", "exceeds"]
     LOWER_WORDS = ["lower", "smaller", "less", "decrease", "worse", "below", "reduced"]
 
-    numbers = [float(m) for m in re.findall(r"-?\d+\.?\d*", reasoning)]
+    # A number is a label if it directly follows one of these words/tokens.
+    LABEL_PREFIX = re.compile(
+        r"(?:batch(?:\s+size)?|size|lr|learning\s+rate|seed|epoch|iteration|step|layer|run|trial)\s*[=:]?\s*$",
+        re.IGNORECASE,
+    )
+
+    numbers = []
+    for m in re.finditer(r"-?\d+\.?\d*", reasoning):
+        before = reasoning[:m.start()]
+        if LABEL_PREFIX.search(before):
+            continue
+        numbers.append(float(m.group()))
+
     if len(numbers) < 2:
-        return {"checked": False, "reason": "Fewer than 2 numbers found in reasoning."}
+        return {"checked": False, "reason": "Fewer than 2 result numbers found in reasoning (label numbers skipped)."}
 
     text_lower = reasoning.lower()
     found_higher = any(w in text_lower for w in HIGHER_WORDS)
