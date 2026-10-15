@@ -1,0 +1,138 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of stochastic gradient descent (SGD) for a linear regression model with synthetic data. Choose two learning rates: a small and a large (100x higher). Print the loss after each iteration for both learning rates.",
+    "planner_hypothesis": "Using an extremely high learning rate (100x higher than a well-tuned value) causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Iteration 1, Small Learning Rate: Loss = 330.9623\nIteration 2, Small Learning Rate: Loss = 35.8036\nIteration 3, Small Learning Rate: Loss = 7.8726\nIteration 4, Small Learning Rate: Loss = 5.1800\nItera"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Iteration 1, Small Learning Rate: Loss = 330.9623\nIteration 2, Small Learning Rate: Loss = 35.8036\nIteration 3, Small Learning Rate: Loss = 7.8726\nIteration 4, Small Learning Rate: Loss = 5.1800\nItera"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Iteration 1, Small Learning Rate: Loss = 330.9623\nIteration 2, Small Learning Rate: Loss = 35.8036\nIteration 3, Small Learning Rate: Loss = 7.8726\nIteration 4, Small Learning Rate: Loss = 5.1800\nItera"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "l2_weight_shrinkage_01",
+    "mechanism": "regularization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 10 steps of gradient descent for linear regression with and without L2 regularization. Initialize weights randomly and use synthetic data. Print the final weight values.",
+    "planner_hypothesis": "Adding L2 regularization reduces the magnitude of learned weights compared to training without regularization on a simple linear regression task.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 25, in <module>\n  File \"<string>\", line 11, in gradient_descent\n  File \"<string>\", line 11, in <listcomp>\n  File \"<string>\", line 11, in <gen"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"<string>\", line 10, in gradient_descent\n  File \"<string>\", line 10, in <listcomp>\n  File \"<string>\", line 10, in <gen"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"<string>\", line 10, in gradient_descent\n  File \"<string>\", line 10, in <listcomp>\n  File \"<string>\", line 10, in <gen"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "batch_size_gradient_variance_01",
+    "mechanism": "batch_size",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Implement a simple linear regression model using only Python's standard library. Generate synthetic data and train the model with both a small batch size (e.g., 2 samples) and a large batch size (e.g., 10 samples). Print the loss values after each epoch for both batch sizes.",
+    "planner_hypothesis": "Using a larger batch size reduces the variance of gradient estimates compared to a smaller batch size when training a model on the same synthetic dataset.",
+    "coder_sandbox_valid": true,
+    "attempts": 2,
+    "analyst_verdict": "inconclusive",
+    "analyst_reasoning": "[DOWNGRADED: Quote not found verbatim (even after normalization) in output: 'Epoch 1, Batch Size 2, Loss: 0.4795'] Original reasoning: The loss curve for the smaller batch size (Batch Size 2) shows no fluctuations, staying at 0.4795 throughout all epochs, while the loss curve for the larger batch size (Batch Size 10) also shows minimal fluctuations but starts slightly higher and decreases more steadily.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 9, in <module>\n  File \"<string>\", line 9, in <listcomp>\nAttributeError: module 'random' has no attribute 'normal'"
+      },
+      {
+        "attempt": 2,
+        "reason": "The task does not specify any guaranteed error condition that should be triggered and handled. The code correctly implements a simple linear regression model using synthetic data with both small and large batch sizes, and it prints the loss values after each epoch for both batch sizes."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "epochs_always_improve_01",
+    "mechanism": "training_dynamics",
+    "ground_truth_verdict": "refutes",
+    "planner_task_description": "Simulate 10 epochs of gradient descent for a simple linear regression task using synthetic data. Use only Python's standard library and print the loss after each epoch.",
+    "planner_hypothesis": "Increasing the number of training epochs always decreases final training loss, with no risk of overfitting or instability, on a simple linear regression task.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Epoch 1, Loss: 53772988560926124838427429838406142834567900972169543367958947491132784714389059973679780269784768785520278703836873459002648636626199769042483820327912969892801703360405833922805245582"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 20, in <module>\nOverflowError: (34, 'Numerical result out of range')\nEpoch 1, Loss: 537729885609261248384274298384061428345679009721695433679"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 20, in <module>\nOverflowError: (34, 'Numerical result out of range')\nEpoch 1, Loss: 537729885609261248384274298384061428345679009721695433679"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate training of a simple 2-layer neural network on synthetic data for 10 epochs with weights initialized to zero and once with small random values. Print the mean squared error (MSE) per epoch for both initialization methods.",
+    "planner_hypothesis": "Initializing all weights to zero prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 58, in <module>\n  File \"<string>\", line 25, in train_neural_network\n  File \"<string>\", line 25, in <listcomp>\n  File \"<string>\", line 6, in s"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 59, in <module>\n  File \"<string>\", line 27, in train_neural_network\n  File \"<string>\", line 27, in <listcomp>\nNameError: name 'k' is not defi"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Training with zero-initialized weights:\nTraceback (most recent call last):\n  File \"<string>\", line 59, in <module>\n  File \"<string>\", line 27, in train_neural_network\n  File \"<string>\", line 27, in <l"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]

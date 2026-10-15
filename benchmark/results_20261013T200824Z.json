@@ -1,0 +1,54 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 20 steps of gradient descent for linear regression on synthetic data once with a well-tuned learning rate (0.01) and once with an extremely high learning rate (10). Print the value of the loss function at each step for both.",
+    "planner_hypothesis": "Using an extremely high learning rate causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": true,
+    "attempts": 2,
+    "analyst_verdict": "refutes",
+    "analyst_reasoning": "The loss values appear extremely high, suggesting that the model is not learning effectively. A loss of 10^18 is indicative of a problem with the model or data.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 33, in <module>\n  File \"<string>\", line 27, in gradient_descent\n  File \"<string>\", line 13, in compute_loss\n  File \"<string>\", line 13, in <genexpr>\nOverflowError: (34, 'Numerical result out of range')"
+      },
+      {
+        "attempt": 2,
+        "reason": "The task describes an error condition that should be triggered and handled, specifically a repeated sequence of the same loss value indicating potential convergence issues in the training process."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 100 epochs of training for a simple 2-layer neural network on synthetic data. Initialize the weights either randomly or to zero and print the mean squared error (MSE) after each epoch for both initialization methods.",
+    "planner_hypothesis": "Initializing all weights to zero instead of small random values prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 31, in <module>\n  File \"<string>\", line 31, in <listcomp>\n  File \"<string>\", line 6, in sigmoid\nNameError: name 'math' is not defined"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 31, in <module>\n  File \"<string>\", line 31, in <listcomp>\n  File \"<string>\", line 6, in sigmoid\nNameError: name 'math' is not defined"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 31, in <module>\n  File \"<string>\", line 31, in <listcomp>\n  File \"<string>\", line 6, in sigmoid\nNameError: name 'math' is not defined"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
