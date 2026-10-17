@@ -1,0 +1,58 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate 10 steps of stochastic gradient descent (SGD) for a simple linear regression model using both a well-tuned learning rate and an extremely high learning rate. For each, use synthetic data with one feature and one target variable. Print the predicted values and loss at each step.",
+    "planner_hypothesis": "Using an extremely high learning rate causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task does not describe an error condition that should be triggered and handled. Instead, it describes a scenario where the learning algorithm is exposed to extremely high values that lead to numerical instability and overflow, which indicates a failure in the design or implementation of the training process rather than an intentional error condition."
+      },
+      {
+        "attempt": 2,
+        "reason": "The task describes an error condition that should be avoided entirely. The predicted values are extremely large and result in a loss that grows exponentially, indicating an overflow or numerical instability in the model's calculations."
+      },
+      {
+        "attempt": 3,
+        "reason": "The task describes scenarios that lead to extremely high and unrealistic loss values, which should be avoided entirely in a practical application."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of training for a simple 2-layer neural network on synthetic data with both random and zero-initialized weights. Print the loss values after each update.",
+    "planner_hypothesis": "Initializing all weights to zero prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 39, in <module>\n  File \"<string>\", line 39, in <listcomp>\n  File \"<string>\", line 18, in sigmoid\nNameError: name 'math' is not defined"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 49, in <module>\n  File \"<string>\", line 49, in <genexpr>\nIndexError: list index out of range"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 49, in <module>\n  File \"<string>\", line 49, in <genexpr>\nIndexError: list index out of range"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
