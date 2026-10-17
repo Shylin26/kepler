@@ -9,6 +9,19 @@ from agents.coder.coder_agent import generate_code, strip_markdown_fences, check
 from agents.analyst.analyst_agent import analyze_result
 
 
+def build_retry_prompt(task_description: str, code: str, reason: str) -> str:
+    return f"""{task_description}
+Your previous attempt FAILED. Failure details:
+{reason}
+
+The code below is WRONG. Do not repeat it. Find the specific cause named above, change the code to fix it, and make sure every name used is defined or imported.
+
+Failing code:
+{code}
+
+Return the complete corrected script only."""
+
+
 def run_with_self_correction(spec, max_attempts: int = 3)->dict:
     task_description = spec.task_description
     task = task_description
@@ -57,14 +70,7 @@ def run_with_self_correction(spec, max_attempts: int = 3)->dict:
                 print(f"--- WARNING: total sandbox time ({total_sandbox_seconds:.2f}s) exceeded compute_budget_seconds ({spec.compute_budget_seconds}s) across {attempt} attempts ---")
             return {"success": True, "final_code": code, "attempts": attempt, "history": history, "total_sandbox_seconds": round(total_sandbox_seconds, 3), "budget_exceeded": budget_exceeded}
 
-        task = f"""{task_description}
-Your previous attempt failed. Here is the code you wrote:
-{code}
-
-Here is why it failed:
-{verdict['reason']}
-
-Please fix the code and provide a corrected, complete script."""
+        task = build_retry_prompt(task_description, code, verdict['reason'])
 
     budget_exceeded = total_sandbox_seconds > spec.compute_budget_seconds
     if budget_exceeded:
@@ -110,7 +116,7 @@ def run_multiple_experiments(specs: list, hypothesis_id: str, research_question:
             "filepath": filepath, "analysis": analysis,
         })
 
-    return logged_results 
+    return logged_results
 
 
 if __name__ == "__main__":
@@ -124,7 +130,7 @@ if __name__ == "__main__":
     research_question, research_question_cost = propose_next_research_question(topic_area)
     print(f"=== DIRECTOR PROPOSED QUESTION: {research_question} ===")
     print(f"--- LLM COST (Director: research_question) ---\n{research_question_cost}")
-    
+
     hypothesis_id = find_or_create_hypothesis(research_question, topic_area=topic_area)
     print(f"=== HYPOTHESIS CREATED IN GRAPH: {hypothesis_id} ===")
 
@@ -146,5 +152,3 @@ if __name__ == "__main__":
         if result.get("budget_exceeded"):
             cost_note += " (BUDGET EXCEEDED)"
         print(f"Variation {i+1}: Success={result['success']}, Attempts={result['attempts']}, Sandbox time={cost_note}, Run ID={lr['run_id']}")
-
-    
