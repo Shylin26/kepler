@@ -2,10 +2,13 @@ import ollama
 import json
 import re
 from memory.trajectory_store.llm_cost import extract_llm_cost
+from agents.output_utils import cap_output
 
 def analyze_result(hypothesis: str, expected_outcome: str, output: str, model: str = "qwen2.5-coder:7b") -> dict:
     """Ask an LLM to judge whether an experiment's actual output supports,
     refutes, or is inconclusive relative to the stated hypothesis."""
+
+    shown_output = cap_output(output)
 
     prompt = f"""You are a careful research analyst. Given a hypothesis, what
 result was expected if the hypothesis were true, and the actual output of the
@@ -20,7 +23,7 @@ Expected outcome if the hypothesis is true:
 {expected_outcome}
 
 Actual experiment output:
-{output}
+{shown_output}
 
 Be skeptical and precise. Do not assume the hypothesis is true just because
 the code ran successfully -- look at the actual numbers.

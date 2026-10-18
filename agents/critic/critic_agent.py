@@ -2,6 +2,7 @@ import ollama
 import json
 import re
 from memory.trajectory_store.llm_cost import extract_llm_cost
+from agents.output_utils import cap_output
 
 def _error_summary(output: str) -> str:
     """Short snippet for retry feedback: the head of the output plus the last
@@ -39,6 +40,8 @@ def task_adherence_check(task_description :str,code:str,output:str,model:str="qw
     """Ask an LLM whether the code actually still solves the original task,
     rather than just running without error."""
 
+    shown_output = cap_output(output)
+
     prompt = f"""You are a strict code reviewer. Your job is to catch code that
 technically runs without crashing, but secretly does NOT solve the task as originally
 stated -- for example, by silently changing numbers, conditions, or requirements to
@@ -59,7 +62,7 @@ Code that was written:
 {code}
 
 Output when run:
-{output}
+{shown_output}
 
 First, in one sentence, identify whether the task describes a guaranteed
 error condition that should be triggered and handled, or an error condition
