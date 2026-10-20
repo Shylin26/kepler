@@ -1,0 +1,58 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of stochastic gradient descent for a simple linear regression model with two randomly generated features and targets. Use a small learning rate (0.01) and an extremely high learning rate (101x the well-tuned value). Print the loss at each step.",
+    "planner_hypothesis": "Using an extremely high learning rate (100x higher than a well-tuned value) causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": true,
+    "attempts": 3,
+    "analyst_verdict": "inconclusive",
+    "analyst_reasoning": "[DOWNGRADED: Quote not found verbatim (even after normalization) in output: 'Step 1, Loss: 0.9001\nStep 2,, Loss: 0.0128'] Original reasoning: The experiment output shows that the loss for both learning rates decreased over time, which contradicts the hypothesis that a very high learning rate causes SGD to diverge.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Learning Rate: 0.01\nStep 1, Loss: 0.9001\nStep 2, Loss: 0.4385\nStep 3, Loss: 0.2180\nStep 4, Loss: 0.1122\nStep 5, Loss: 0.0611\nStep 6, Loss: 0.0363\nStep 7, Loss: 0.0242\nStep 8, Loss: 0.0184\nStep 9, Loss ... [exception: OverflowError: (34, 'Numerical result out of range')]"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Learning Rate: 0.01\nStep 1, Loss: 0.9001\nStep 2, Loss: 0.4385\nStep 3, Loss: 0.2180\nStep 4, Loss: 0.1122\nStep 5, Loss: 0.0611\nStep 6, Loss: 0.0363\nStep 7, Loss: 0.0242\nStep 8, Loss: 0.0184\nStep 9, Loss ... [exception: OverflowError: (34, 'Numerical result out of range')]"
+      },
+      {
+        "attempt": 3,
+        "reason": "The task asks to simulate one epoch of stochastic gradient descent for a simple linear regression model with two randomly generated features and targets. It specifies learning rates (0.01 and 101x the well-tuned value), so triggering errors by using these rates is acceptable as per the instructions."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of training for a simple 2-layer neural network on synthetic data with weights initialized to zero and weights initialized to small random values. Print the loss after each update.",
+    "planner_hypothesis": "Initializing all weights to zero instead of small random values prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 62, in <module>\n  File \"<string>\", line 38, in forward\n  File \"<string>\", line 38, in <listcomp>\nTypeError: unsupported operand type(s) for +: 'int' and 'list'"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 63, in <module>\n  File \"<string>\", line 39, in forward\n  File \"<string>\", line 39, in <listcomp>\nTypeError: unsupported operand type(s) for +: 'int' and 'list'"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 63, in <module>\n  File \"<string>\", line 39, in forward\n  File \"<string>\", line 39, in <listcomp>\nTypeError: unsupported operand type(s) for +: 'int' and 'list'"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
