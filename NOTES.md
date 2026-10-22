@@ -1127,3 +1127,74 @@ other benchmark process was running. The failures were Coder bugs
 only 200 characters of output, so Coder often could not see the exception
 line. Not shown to be the cause of the failures. Numbers are not an
 accuracy rate.
+
+## [21 october 2026] -- Retry feedback, retry prompt, output cap: what was measured
+
+**Retry prompt (85bf874):** on a controlled missing-import failure, the old
+wording fixed it in 1/5 runs under real sandbox execution, the new wording
+in 5/5. One failure type, synthetic code. The real Q1/Q5 rerun showed no
+benefit; Q5 moved NameError -> IndexError -> TypeError but kept failing.
+
+**Failure recount:** of 13 failed question-runs, 11 were crashes/no output
+and 2 were Critic LLM rejections (last attempt only). The runner's
+coder_sandbox_valid includes the Critic verdict, so the name is misleading.
+
+**Q1 as an experiment:** on Oct 17 the "tuned" learning rate also diverged
+(to ~5e36), so the experiment never showed a contrast and the Analyst's
+refutes was defensible. On Oct 19 the tuned run converged but the high-LR
+run crashed with OverflowError, and the retry loop treats that as failure.
+
+**Critic prompt overflow (030be1e):** Critic prompt_tokens was exactly 32768
+on all three Oct 17 attempts (44 KB outputs). After capping shown output at
+12000 chars (head+tail), one Critic call used 11924 tokens. Consistent with
+overflow, one sample, not proof.
+
+**Analyst:** fabricated a quote with wrong values on Oct 19; grounding
+rejected it correctly.
+
+**Open:** Planner should bound printed output and pick a converging LR;
+retry feedback for divergence experiments (catch OverflowError, don't
+weaken the experiment) is untested; runner should rename the field and save
+the final sandbox output; the git-stash check that
+test_critic_error_feedback fails on the old code is still unconfirmed. No
+benchmark accuracy rate is claimed.
+
+## [22 october 2026] -- Addendum: Q1 attempt analysis, cap sizing, Analyst tests
+
+**Commit history:** 92c7dbc's message says the Critic/Analyst output cap
+was raised to 24000 chars. That commit contains only three debug scripts;
+the cap change is in the following commit.
+
+**Q1 attempts (Oct 19):** the high learning rate (101*0.01) was identical
+in all three attempts, so the "WRONG" retry wording did not make Coder
+weaken the experiment. Attempts 1 and 2 were nearly the same code and both
+overflowed. Attempt 3 changed steps from 1000 to 100, which ends the
+high-LR run near 2e290, just under the float limit (reproduced locally).
+Its output showed a good contrast: tuned run converged, high-LR run diverged.
+The Analyst called it inconclusive with a fabricated quote (grounding
+rejected it correctly).
+
+**Cap sizing:** digit-heavy output costs about 1 token per character
+(17,082 chars = 16,473 prompt tokens on the real Q1 output). The 12000
+cap was cutting an output that fit in the window. In a controlled test of
+the Analyst on that output: capped at 12000, 8/10 runs were downgraded for
+bad quotes; uncapped, 0/10. Cap raised to 24000 (judgment call, ~24K tokens
+worst case). The Oct 17 Critic reading of exactly 32768 tokens fits a
+~44 KB output overflowing the window, but that case was not reproduced.
+
+**Analyst verdicts on that output (n=10 per arm, one input):** uncapped
+gave refutes 10/10 even though its reasoning described the 0.01 run
+converging and the 1.01 run diverging, i.e. the verdict label contradicted
+the reasoning. A clamped-number variant gave 10/10 refutes, then 4 refutes /
+1 supports / 5 inconclusive on a repeat, so batch-to-batch swing is large.
+Number length was not the cause of the verdict flip.
+
+**Schema test (n=6 per case, my own truth labels):** asking "does the output
+match the expected outcome? yes/no/unclear" and mapping to the verdict in
+code gave supports 5/6 on Q1 (old prompt: 0/6), 6/6 on a clear refutes case
+(same as old), but 2/6 wrong verdicts on an irrelevant-output case that the
+old prompt got 6/6. Not adopted. Needs more cases, especially inconclusive
+ones, before touching production.
+
+**Open:** same list as above, plus the Q1 experiment's second run starts
+from already-trained parameters (not a clean comparison).
