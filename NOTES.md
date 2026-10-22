@@ -1198,3 +1198,12 @@ ones, before touching production.
 
 **Open:** same list as above, plus the Q1 experiment's second run starts
 from already-trained parameters (not a clean comparison).
+
+## [22 october 2026] -- Correction: where the cap change landed
+
+The addendum above says the cap raise was "in the following commit". Not
+true for 92c7dbc or c9a9f76: both described it without containing it (the
+edits were never applied before those commits ran). The real change is the
+commit after c9a9f76. Verified there: cap 24000, and a 43,580-char
+digit-heavy output gave 23,664 Critic prompt tokens (11,986 at the old
+cap). Process fix: edit, show the diff, then commit, never in one step.
