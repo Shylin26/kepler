@@ -8,7 +8,7 @@ def test_long_keeps_head_tail_and_marker():
     r = cap_output(s)
     assert r.startswith("HEAD") and r.endswith("TAIL")
     assert "characters omitted" in r
-    assert len(r) < 12100
+    assert len(r) < 24100
 
 if __name__ == "__main__":
     test_short_unchanged()

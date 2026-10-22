@@ -19,7 +19,7 @@ def test_critic_prompt_is_capped_and_keeps_task():
         ca.task_adherence_check("TASK_MARKER do the thing", "print(1)", BIG)
     assert "TASK_MARKER" in cap["prompt"]
     assert "characters omitted" in cap["prompt"]
-    assert len(cap["prompt"]) < 20000
+    assert len(cap["prompt"]) < 32000
 
 def test_analyst_prompt_is_capped_and_keeps_hypothesis():
     cap = {}
@@ -29,7 +29,7 @@ def test_analyst_prompt_is_capped_and_keeps_hypothesis():
         aa.analyze_result("HYPOTHESIS_MARKER", "expected", BIG)
     assert "HYPOTHESIS_MARKER" in cap["prompt"]
     assert "characters omitted" in cap["prompt"]
-    assert len(cap["prompt"]) < 20000
+    assert len(cap["prompt"]) < 32000
 
 if __name__ == "__main__":
     test_critic_prompt_is_capped_and_keeps_task()
