@@ -23,6 +23,12 @@ Rules:
   "while error > tolerance") MUST also include a hard maximum iteration count
   (e.g. `max_iterations = 10000`) as a backup exit condition, since floating-point
   values may never cross the threshold exactly. Never write an unbounded loop.
+
+- OUTPUT SIZE: keep the total printed output under 40 lines and 4000 characters.
+  Never print lists or arrays of per-sample values; print only scalar summaries
+  (for example the loss at each step, formatted with :.4g). If a value can grow
+  without bound, stop the loop early once it exceeds 1e100 and print
+  'diverged at step N'.
 """
 
     response = ollama.generate(model=model, prompt=prompt, options={"temperature": 0.7, "num_ctx": 32768})

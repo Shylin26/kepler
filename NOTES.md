@@ -1207,3 +1207,31 @@ edits were never applied before those commits ran). The real change is the
 commit after c9a9f76. Verified there: cap 24000, and a 43,580-char
 digit-heavy output gave 23,664 Critic prompt tokens (11,986 at the old
 cap). Process fix: edit, show the diff, then commit, never in one step.
+
+## [24 october 2026] -- Analyst verdict wording (rejected) and Coder output rule (kept)
+
+**Analyst schema test v2 (labels and decision rule committed before running,
+c0428d3):** asking "does the output match the expected outcome? yes/no/unclear"
+and mapping to the verdict in code vs the current prompt, 10 hand-written cases,
+5 runs each. Old: 44/50 overall (inconclusive cases 16/20). New: 37/50 overall
+(inconclusive cases 7/20). Decision rule (adopt only if overall +10 points and
+inconclusive drop <= 10 points) failed on both counts, so the new wording is
+NOT adopted. It answered yes/no when the output had no relevant information.
+The earlier Q1 gain (0/6 -> 5/6) does not hold up as a general fix. Limits:
+short clean outputs, one model, 5 runs per case, a few debatable labels
+(mixed_seeds).
+
+**Coder output rule (decision rule committed in 9ee7063):** Q1's old runs
+printed per-sample arrays (outputs of 22 KB, 145 KB, 3.3 MB; digit-heavy text
+costs about 1 token per char). Appending a rule (under 40 lines / 4000 chars,
+no per-sample lists, stop at 1e100 and print 'diverged') gave 7/8 runs exit 0
+under 24,000 chars vs 4/8 for the old prompt. Put into the Coder's Rules
+block: 6/8 (rule: keep if >= 6/8). Median output 976 chars vs 2,472. Kept.
+
+**Caveats:** one task, 8 runs per arm. Run 1 ignored the rule. Run 3 passed
+the count but had no converging run (both runs diverged), so the count does
+not show the experiment tests the hypothesis; the Planner spec says "well-tuned"
+without a number. The rule's 40-line limit may conflict with tasks like Q2
+(weight magnitude at each of 100 iterations); not yet checked in a benchmark
+run. The runaway detector did not catch a 3.3 MB output because its lines
+differed (it only flags the same line repeated).
