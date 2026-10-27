@@ -1,0 +1,152 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, implement a simple linear regression model and train it using stochastic gradient descent (SGD) with two different learning rates: one well-tuned and one extremely high (100x higher). Print the value of the loss function at each step for both learning rates.",
+    "planner_hypothesis": "Using an extremely high learning rate causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Traceback (most recent call last):\n  File \"<string>\", line 26, in <module>\n  File \"<string>\", line 14, in predict\n  File \"<string>\", line 14, in <listcomp>\n  File \"<string>\", line 14, in <genexpr>\nIndexError: list index out of range\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 26, in <module>\n  File \"<string>\", line 14, in predict\n  File \"<string>\", line 14, in <listcomp>\n  File \"<string>\", line 14, in <genexpr>\nTypeError: can't multiply sequence by non-int of type 'float'"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 26, in <module>\n  File \"<string>\", line 14, in predict\n  File \"<string>\", line 14, in <listcomp>\n  File \"<string>\", line 14, in <genexpr>\nTypeError: can't multiply sequence by non-int of type 'float'"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 26, in <module>\n  File \"<string>\", line 14, in predict\n  File \"<string>\", line 14, in <listcomp>\n  File \"<string>\", line 14, in <genexpr>\nIndexError: list index out of range"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "l2_weight_shrinkage_01",
+    "mechanism": "regularization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 10 steps of gradient descent with and without L2 regularization for a simple linear regression model. Print the value of each weight parameter at each step for both scenarios.",
+    "planner_hypothesis": "Adding L2 regularization reduces the magnitude of learned weights compared to training without regularization on a simple linear regression task.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Gradient Descent without L2 regularization:\nTraceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"<string>\", line 24, in <listcomp>\n  File \"<string>\", line 24, in <genexpr>\nIndexError: list index out of range\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"<string>\", line 24, in <listcomp>\n  File \"<string>\", line 24, in <genexpr>\nIndexError: list index out of range\nGradient Descent without L2 regularization:"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"<string>\", line 24, in <listcomp>\n  File \"<string>\", line 24, in <genexpr>\nIndexError: list index out of range\nGradient Descent without L2 regularization:"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Gradient Descent without L2 regularization:\nTraceback (most recent call last):\n  File \"<string>\", line 24, in <module>\n  File \"<string>\", line 24, in <listcomp>\n  File \"<string>\", line 24, in <genexpr>\nIndexError: list index out of range"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "batch_size_gradient_variance_01",
+    "mechanism": "batch_size",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 100 epochs of gradient descent for a simple linear regression model using both small and large batch sizes. Print the average loss per epoch for each batch size.",
+    "planner_hypothesis": "A larger batch size reduces the variance of gradient estimates, leading to smoother loss curves when training a model on the same synthetic dataset.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Epoch 0, Loss: 8.825e+115\ndiverged at epoch 10\nEpoch 0, Loss: 2.464e+15\nEpoch 10, Loss: 1.129e+128\nEpoch 20, Loss: 4.93e+240\nTraceback (most recent call last):\n  File \"<string>\", line 46, in <module>\n  File \"<string>\", line 35, in gradient_descent\n  File \"<string>\", line 15, in loss\n  File \"<string>\", line 15, in <genexpr>\nOverflowError: (34, 'Numerical result out of range')\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Epoch 0, Loss: 8.825e+115\nEpoch 10, Loss: nan\nEpoch 20, Loss: nan\nEpoch 30, Loss: nan\nEpoch 40, Loss: nan\nEpoch 50, Loss: nan\nEpoch 60, Loss: nan\nEpoch 70, Loss: nan\nEpoch 80, Loss: nan\nEpoch 90, Loss ... [exception: OverflowError: (34, 'Numerical result out of range')]"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 42, in <module>\n  File \"<string>\", line 35, in gradient_descent\nNameError: name 'math' is not defined"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Epoch 0, Loss: 8.825e+115\ndiverged at epoch 10\nEpoch 0, Loss: 2.464e+15\nEpoch 10, Loss: 1.129e+128\nEpoch 20, Loss: 4.93e+240\nTraceback (most recent call last):\n  File \"<string>\", line 46, in <module>\n  File \"<string>\", line 35, in gradient_descent\n  File \"<string>\", line 15, in loss\n  File \"<string>\", line 15, in <genexpr>\nOverflowError: (34, 'Numerical result out of range')"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "epochs_always_improve_01",
+    "mechanism": "training_dynamics",
+    "ground_truth_verdict": "refutes",
+    "planner_task_description": "Using only Python's standard library, simulate one epoch of stochastic gradient descent for linear regression on synthetic data once with a small number of epochs (5) and once with a large number of epochs (20). Calculate the mean squared error loss after each epoch and print it for both runs.",
+    "planner_hypothesis": "Increasing the number of training epochs always decreases final training loss, with no risk of overfitting or instability, on a simple linear regression task.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Traceback (most recent call last):\n  File \"<string>\", line 42, in <module>\n  File \"<string>\", line 30, in linear_regression\n  File \"<string>\", line 30, in <listcomp>\n  File \"<string>\", line 30, in <genexpr>\nNameError: name 'xi' is not defined. Did you mean: 'i'?\nEpoch 1 (small): 2.142\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Script ran successfully but produced no output at all."
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Epoch 1 (small): 2.142\nTraceback (most recent call last):\n  File \"<string>\", line 42, in <module>\n  File \"<string>\", line 30, in linear_regression\n  File \"<string>\", line 30, in <listcomp>\n  File \"<string>\", line 30, in <genexpr>\nNameError: name 'xi' is not defined. Did you mean: 'i'?"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 42, in <module>\n  File \"<string>\", line 30, in linear_regression\n  File \"<string>\", line 30, in <listcomp>\n  File \"<string>\", line 30, in <genexpr>\nNameError: name 'xi' is not defined. Did you mean: 'i'?\nEpoch 1 (small): 2.142"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate training for 10 epochs of a simple 2-layer neural network using synthetic data. Initialize the weights either to zero or with small random values. For each epoch, calculate and print the loss value on a single example.",
+    "planner_hypothesis": "Initializing all weights to zero instead of small random values prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Traceback (most recent call last):\n  File \"<string>\", line 22, in <module>\n  File \"<string>\", line 22, in <genexpr>\nNameError: name 'i' is not defined. Did you mean: 'id'?\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 22, in <module>\n  File \"<string>\", line 22, in <genexpr>\nNameError: name 'i' is not defined. Did you mean: 'id'?"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 22, in <module>\n  File \"<string>\", line 22, in <genexpr>\nNameError: name 'i' is not defined. Did you mean: 'id'?"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 22, in <module>\n  File \"<string>\", line 22, in <genexpr>\nNameError: name 'i' is not defined. Did you mean: 'id'?"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
