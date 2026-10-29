@@ -1,0 +1,8 @@
+# Tested with Python 3.11 on macOS (Apple Silicon).
+# Versions are the ones the project was developed against.
+docker==7.2.0
+neo4j==6.2.0
+ollama==0.6.2
+pydantic==2.13.4
+ray==2.56.1
+sentence-transformers==6.1.0
