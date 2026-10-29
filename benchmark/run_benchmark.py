@@ -68,6 +68,8 @@ def run_benchmark():
             "planner_task_description": spec.task_description,
             "planner_hypothesis": spec.hypothesis,
             "coder_sandbox_valid": coder_sandbox_valid,
+            "loop_success": loop_result["success"],
+            "final_sandbox_output": loop_result["history"][-1]["sandbox_result"].get("output", "")[:5000],
             "attempts": loop_result["attempts"],
             "analyst_verdict": analysis["verdict"] if analysis else None,
             "analyst_reasoning": analysis["reasoning"] if analysis else None,

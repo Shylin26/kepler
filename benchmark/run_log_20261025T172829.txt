@@ -1,0 +1,906 @@
+
+======================================================================
+=== PLANTED QUESTION: lr_divergence_01 (learning_rate) ===
+======================================================================
+Research question: Does using an extremely high learning rate (100x higher than a well-tuned value) cause SGD to diverge rather than converge, compared to a well-tuned learning rate, when training a simple linear regression model on synthetic data?
+Ground truth: supports
+
+--- PLANNER OUTPUT ---
+Hypothesis: Using an extremely high learning rate causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.
+Task description: Using only Python's standard library, implement a simple linear regression model and train it using stochastic gradient descent (SGD) with two different learning rates: one well-tuned and one extremely high (100x higher). Print the value of the loss function at each step for both learning rates.
+Expected outcome: The script should run to completion and print the loss values at each step for both learning rate settings. The extremely high learning rate should cause the loss to diverge, while the well-tuned learning rate should lead to a smooth decrease in loss.
+
+=== Attempt 1 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 53.091, 'load_duration_seconds': 0.134, 'inference_duration_seconds': 52.956, 'prompt_tokens': 473, 'completion_tokens': 339, 'total_tokens': 812}
+--- CODE ---
+import random
+import math
+
+random.seed(42)
+
+# Generate synthetic data
+X = [[random.uniform(-1, 1) for _ in range(3)] for _ in range(100)]
+y = [sum(x) + random.gauss(0, 0.5) for x in X]
+
+# Initialize model parameters
+theta = [random.gauss(0, 0.1) for _ in range(4)]
+
+def predict(X, theta):
+    return [sum(xi * theta[i] for i in range(len(theta))) for xi in X]
+
+def loss(y_pred, y):
+    return sum((y_pred[i] - y[i]) ** 2 for i in range(len(y))) / len(y)
+
+# Learning rates
+learning_rates = [0.01, 10]
+max_iterations = 1000
+
+for lr in learning_rates:
+    theta = [random.gauss(0, 0.1) for _ in range(4)]
+    for step in range(max_iterations):
+        y_pred = predict(X, theta)
+        grad = [sum((y_pred[i] - y[i]) * X[i][j] for i in range(len(y))) / len(y) for j in range(len(theta))]
+        theta = [theta[j] - lr * grad[j] for j in range(len(theta))]
+        current_loss = loss(y_pred, y)
+        if math.isinf(current_loss):
+            print(f'diverged at step {step}')
+            break
+        print(f'step {step}, learning rate {lr}: {current_loss:.4g}')
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 26, in <module>\n  File "<string>", line 14, in predict\n  File "<string>", line 14, in <listcomp>\n  File "<string>", line 14, in <genexpr>\nTypeError: can\'t multiply sequence by non-int of type \'float\'\n', 'duration_seconds': 0.575, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 26, in <module>\n  File "<string>", line 14, in predict\n  File "<string>", line 14, in <listcomp>\n  File "<string>", line 14, in <genexpr>\nTypeError: can\'t multiply sequence by non-int of type \'float\''}
+
+=== Attempt 2 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 61.497, 'load_duration_seconds': 0.366, 'inference_duration_seconds': 61.131, 'prompt_tokens': 951, 'completion_tokens': 335, 'total_tokens': 1286}
+--- CODE ---
+import random
+import math
+
+random.seed(42)
+
+# Generate synthetic data
+X = [[random.uniform(-1, 1) for _ in range(3)] for _ in range(100)]
+y = [sum(x) + random.gauss(0, 0.5) for x in X]
+
+# Initialize model parameters
+theta = [random.gauss(0, 0.1) for _ in range(4)]
+
+def predict(X, theta):
+    return [sum(xi * theta[i] for i in range(len(theta))) for xi in X]
+
+def loss(y_pred, y):
+    return sum((y_pred[i] - y[i]) ** 2 for i in range(len(y))) / len(y)
+
+# Learning rates
+learning_rates = [0.01, 10]
+max_iterations = 1000
+
+for lr in learning_rates:
+    theta = [random.gauss(0, 0.1) for _ in range(4)]
+    for step in range(max_iterations):
+        y_pred = predict(X, theta)
+        grad = [sum((y_pred[i] - y[i]) * X[i][j] for i in range(len(y))) / len(y) for j in range(len(theta))]
+        theta = [theta[j] - lr * grad[j] for j in range(len(theta))]
+        current_loss = loss(y_pred, y)
+        if math.isinf(current_loss):
+            print(f'diverged at step {step}')
+            break
+        print(f'step {step}, learning rate {lr}: {current_loss:.4g}')
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 26, in <module>\n  File "<string>", line 14, in predict\n  File "<string>", line 14, in <listcomp>\n  File "<string>", line 14, in <genexpr>\nTypeError: can\'t multiply sequence by non-int of type \'float\'\n', 'duration_seconds': 0.613, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 26, in <module>\n  File "<string>", line 14, in predict\n  File "<string>", line 14, in <listcomp>\n  File "<string>", line 14, in <genexpr>\nTypeError: can\'t multiply sequence by non-int of type \'float\''}
+
+=== Attempt 3 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 44.979, 'load_duration_seconds': 0.178, 'inference_duration_seconds': 44.801, 'prompt_tokens': 951, 'completion_tokens': 337, 'total_tokens': 1288}
+--- CODE ---
+import random
+import math
+
+random.seed(42)
+
+# Generate synthetic data
+X = [[random.uniform(-1, 1) for _ in range(3)] for _ in range(100)]
+y = [sum(x) + random.gauss(0, 0.5) for x in X]
+
+# Initialize model parameters
+theta = [random.gauss(0, 0.1) for _ in range(4)]
+
+def predict(X, theta):
+    return [sum(xi[j] * theta[j] for j in range(len(theta))) for xi in X]
+
+def loss(y_pred, y):
+    return sum((y_pred[i] - y[i]) ** 2 for i in range(len(y))) / len(y)
+
+# Learning rates
+learning_rates = [0.01, 10]
+max_iterations = 1000
+
+for lr in learning_rates:
+    theta = [random.gauss(0, 0.1) for _ in range(4)]
+    for step in range(max_iterations):
+        y_pred = predict(X, theta)
+        grad = [sum((y_pred[i] - y[i]) * X[i][j] for i in range(len(y))) / len(y) for j in range(len(theta))]
+        theta = [theta[j] - lr * grad[j] for j in range(len(theta))]
+        current_loss = loss(y_pred, y)
+        if math.isinf(current_loss):
+            print(f'diverged at step {step}')
+            break
+        print(f'step {step}, learning rate {lr}: {current_loss:.4g}')
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 26, in <module>\n  File "<string>", line 14, in predict\n  File "<string>", line 14, in <listcomp>\n  File "<string>", line 14, in <genexpr>\nIndexError: list index out of range\n', 'duration_seconds': 0.547, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 26, in <module>\n  File "<string>", line 14, in predict\n  File "<string>", line 14, in <listcomp>\n  File "<string>", line 14, in <genexpr>\nIndexError: list index out of range'}
+
+--- CODER/SANDBOX RESULT ---
+Success: False, Attempts: 3
+
+--- ANALYST SKIPPED (Coder/sandbox did not succeed) ---
+
+--- CRITIC REASONING (for human review) ---
+  Attempt 1: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 26, in <module>
+  File "<string>", line 14, in predict
+  File "<string>", line 14, in <listcomp>
+  File "<string>", line 14, in <genexpr>
+TypeError: can't multiply sequence by non-int of type 'float'
+  Attempt 2: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 26, in <module>
+  File "<string>", line 14, in predict
+  File "<string>", line 14, in <listcomp>
+  File "<string>", line 14, in <genexpr>
+TypeError: can't multiply sequence by non-int of type 'float'
+  Attempt 3: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 26, in <module>
+  File "<string>", line 14, in predict
+  File "<string>", line 14, in <listcomp>
+  File "<string>", line 14, in <genexpr>
+IndexError: list index out of range
+
+======================================================================
+=== PLANTED QUESTION: l2_weight_shrinkage_01 (regularization) ===
+======================================================================
+Research question: Does adding L2 regularization reduce the magnitude of learned weights compared to training without regularization, on a simple linear regression task with the same data and number of training steps?
+Ground truth: supports
+
+--- PLANNER OUTPUT ---
+Hypothesis: Adding L2 regularization reduces the magnitude of learned weights compared to training without regularization on a simple linear regression task.
+Task description: Using only Python's standard library, simulate 10 steps of gradient descent with and without L2 regularization for a simple linear regression model. Print the value of each weight parameter at each step for both scenarios.
+Expected outcome: With L2 regularization, the magnitude of the learned weights should be smaller compared to training without regularization.
+
+=== Attempt 1 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 64.833, 'load_duration_seconds': 0.117, 'inference_duration_seconds': 64.716, 'prompt_tokens': 455, 'completion_tokens': 429, 'total_tokens': 884}
+--- CODE ---
+import random
+
+random.seed(42)
+
+# Generate synthetic data
+X = [[1, i] for i in range(10)]
+y = [2 * i + 1 for i in range(10)]
+
+# Initialize weights and learning rate
+w = [random.random(), random.random()]
+learning_rate = 0.01
+
+def predict(X, w):
+    return [sum(x * wi for x, wi in zip(xi, w)) for xi in X]
+
+def loss(y_pred, y):
+    return sum((yp - yi) ** 2 for yp, yi in zip(y_pred, y))
+
+max_iterations = 10000
+
+print("Gradient Descent without L2 regularization:")
+for step in range(10):
+    y_pred = predict(X, w)
+    grad = [sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) for j, xi in enumerate(X)]
+    w = [w[j] - learning_rate * grad[j] for j in range(len(w))]
+    print(f"Step {step + 1}: Loss = {loss(y_pred, y):.4g}, W0 = {w[0]:.4g}, W1 = {w[1]:.4g}")
+
+print("\nGradient Descent with L2 regularization:")
+l2_lambda = 0.1
+for step in range(10):
+    y_pred = predict(X, w)
+    grad = [sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) + l2_lambda * w[j] for j, xi in enumerate(X)]
+    w = [w[j] - learning_rate * grad[j] for j in range(len(w))]
+    print(f"Step {step + 1}: Loss = {loss(y_pred, y):.4g}, W0 = {w[0]:.4g}, W1 = {w[1]:.4g}")
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 24, in <module>\n  File "<string>", line 24, in <listcomp>\n  File "<string>", line 24, in <genexpr>\nIndexError: list index out of range\nGradient Descent without L2 regularization:\n', 'duration_seconds': 0.548, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 24, in <module>\n  File "<string>", line 24, in <listcomp>\n  File "<string>", line 24, in <genexpr>\nIndexError: list index out of range\nGradient Descent without L2 regularization:'}
+
+=== Attempt 2 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 79.746, 'load_duration_seconds': 0.135, 'inference_duration_seconds': 79.611, 'prompt_tokens': 1013, 'completion_tokens': 425, 'total_tokens': 1438}
+--- CODE ---
+import random
+
+random.seed(42)
+
+# Generate synthetic data
+X = [[1, i] for i in range(10)]
+y = [2 * i + 1 for i in range(10)]
+
+# Initialize weights and learning rate
+w = [random.random(), random.random()]
+learning_rate = 0.01
+
+def predict(X, w):
+    return [sum(x * wi for x, wi in zip(xi, w)) for xi in X]
+
+def loss(y_pred, y):
+    return sum((yp - yi) ** 2 for yp, yi in zip(y_pred, y))
+
+max_iterations = 10000
+
+print("Gradient Descent without L2 regularization:")
+for step in range(10):
+    y_pred = predict(X, w)
+    grad = [sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) for j, xi in enumerate(X)]
+    w = [w[j] - learning_rate * grad[j] for j in range(len(w))]
+    print(f"Step {step + 1}: Loss = {loss(y_pred, y):.4g}, W0 = {w[0]:.4g}, W1 = {w[1]:.4g}")
+
+print("\nGradient Descent with L2 regularization:")
+l2_lambda = 0.1
+for step in range(10):
+    y_pred = predict(X, w)
+    grad = [sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) + l2_lambda * w[j] for j, xi in enumerate(X)]
+    w = [w[j] - learning_rate * grad[j] for j in range(len(w))]
+    print(f"Step {step + 1}: Loss = {loss(y_pred, y):.4g}, W0 = {w[0]:.4g}, W1 = {w[1]:.4g}")
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 24, in <module>\n  File "<string>", line 24, in <listcomp>\n  File "<string>", line 24, in <genexpr>\nIndexError: list index out of range\nGradient Descent without L2 regularization:\n', 'duration_seconds': 0.585, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 24, in <module>\n  File "<string>", line 24, in <listcomp>\n  File "<string>", line 24, in <genexpr>\nIndexError: list index out of range\nGradient Descent without L2 regularization:'}
+
+=== Attempt 3 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 68.261, 'load_duration_seconds': 0.367, 'inference_duration_seconds': 67.893, 'prompt_tokens': 1013, 'completion_tokens': 461, 'total_tokens': 1474}
+--- CODE ---
+import random
+
+random.seed(42)
+
+# Generate synthetic data
+X = [[1, i] for i in range(10)]
+y = [2 * i + 1 for i in range(10)]
+
+# Initialize weights and learning rate
+w = [random.random(), random.random()]
+learning_rate = 0.01
+
+def predict(X, w):
+    return [sum(x * wi for x, wi in zip(xi, w)) for xi in X]
+
+def loss(y_pred, y):
+    return sum((yp - yi) ** 2 for yp, yi in zip(y_pred, y))
+
+max_iterations = 10000
+
+print("Gradient Descent without L2 regularization:")
+for step in range(10):
+    y_pred = predict(X, w)
+    grad = [sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) for j, xi in enumerate(X)]
+    w = [w[j] - learning_rate * grad[j] for j in range(len(w))]
+    print(f"Step {step + 1}: Loss = {loss(y_pred, y):.4g}, W0 = {w[0]:.4g}, W1 = {w[1]:.4g}")
+
+print("\nGradient Descent with L2 regularization:")
+l2_lambda = 0.1
+for step in range(10):
+    y_pred = predict(X, w)
+    grad = [sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) + l2_lambda * w[j] if j > 0 else sum((y_pred[i] - y[i]) * xi[j] for i in range(len(y_pred))) / len(y) for j, xi in enumerate(X)]
+    w = [w[j] - learning_rate * grad[j] for j in range(len(w))]
+    print(f"Step {step + 1}: Loss = {loss(y_pred, y):.4g}, W0 = {w[0]:.4g}, W1 = {w[1]:.4g}")
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Gradient Descent without L2 regularization:\nTraceback (most recent call last):\n  File "<string>", line 24, in <module>\n  File "<string>", line 24, in <listcomp>\n  File "<string>", line 24, in <genexpr>\nIndexError: list index out of range\n', 'duration_seconds': 0.585, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Gradient Descent without L2 regularization:\nTraceback (most recent call last):\n  File "<string>", line 24, in <module>\n  File "<string>", line 24, in <listcomp>\n  File "<string>", line 24, in <genexpr>\nIndexError: list index out of range'}
+
+--- CODER/SANDBOX RESULT ---
+Success: False, Attempts: 3
+
+--- ANALYST SKIPPED (Coder/sandbox did not succeed) ---
+
+--- CRITIC REASONING (for human review) ---
+  Attempt 1: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 24, in <module>
+  File "<string>", line 24, in <listcomp>
+  File "<string>", line 24, in <genexpr>
+IndexError: list index out of range
+Gradient Descent without L2 regularization:
+  Attempt 2: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 24, in <module>
+  File "<string>", line 24, in <listcomp>
+  File "<string>", line 24, in <genexpr>
+IndexError: list index out of range
+Gradient Descent without L2 regularization:
+  Attempt 3: Non-zero exit code: 1. Output: Gradient Descent without L2 regularization:
+Traceback (most recent call last):
+  File "<string>", line 24, in <module>
+  File "<string>", line 24, in <listcomp>
+  File "<string>", line 24, in <genexpr>
+IndexError: list index out of range
+
+======================================================================
+=== PLANTED QUESTION: batch_size_gradient_variance_01 (batch_size) ===
+======================================================================
+Research question: Does using a larger batch size reduce the variance of gradient estimates (and therefore produce smoother, less noisy loss curves) compared to a smaller batch size, when training a model on the same synthetic dataset?
+Ground truth: supports
+
+--- PLANNER OUTPUT ---
+Hypothesis: A larger batch size reduces the variance of gradient estimates, leading to smoother loss curves when training a model on the same synthetic dataset.
+Task description: Using only Python's standard library, simulate 100 epochs of gradient descent for a simple linear regression model using both small and large batch sizes. Print the average loss per epoch for each batch size.
+Expected outcome: The average loss per epoch with a larger batch size should be smoother and less noisy compared to the smaller batch size.
+
+=== Attempt 1 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 70.551, 'load_duration_seconds': 0.127, 'inference_duration_seconds': 70.424, 'prompt_tokens': 454, 'completion_tokens': 438, 'total_tokens': 892}
+--- CODE ---
+import random
+import math
+
+random.seed(42)
+
+# Data generation
+x = [i for i in range(100)]
+y = [2 * i + 3 for i in x]
+m_true, b_true = 2, 3
+
+def linear_regression(x, m, b):
+    return [m * xi + b for xi in x]
+
+def loss(y_pred, y):
+    return sum((yp - yi) ** 2 for yp, yi in zip(y_pred, y)) / len(y)
+
+def gradient_descent(x, y, m_init, b_init, lr, batch_size):
+    m = m_init
+    b = b_init
+    n = len(x)
+    for epoch in range(100):
+        indices = list(range(n))
+        random.shuffle(indices)
+        for i in range(0, n, batch_size):
+            batch_indices = indices[i:i + batch_size]
+            x_batch = [x[j] for j in batch_indices]
+            y_batch = [y[j] for j in batch_indices]
+            y_pred = linear_regression(x_batch, m, b)
+            dm = -2 * sum((yp - yi) * xi for xi, yp, yi in zip(x_batch, y_pred, y_batch)) / len(y_batch)
+            db = -2 * sum(yp - yi for yp, yi in zip(y_pred, y_batch)) / len(y_batch)
+            m -= lr * dm
+            b -= lr * db
+        if epoch % 10 == 0:
+            y_pred_all = linear_regression(x, m, b)
+            print(f"Epoch {epoch}, Loss: {loss(y_pred_all, y):.4g}")
+    return m, b
+
+# Training with small batch size
+m_small, b_small = gradient_descent(x, y, 0, 0, 0.1, 5)
+
+# Training with large batch size
+m_large, b_large = gradient_descent(x, y, 0, 0, 0.1, 50)
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Epoch 0, Loss: 8.825e+115\nEpoch 10, Loss: nan\nEpoch 20, Loss: nan\nEpoch 30, Loss: nan\nEpoch 40, Loss: nan\nEpoch 50, Loss: nan\nEpoch 60, Loss: nan\nEpoch 70, Loss: nan\nEpoch 80, Loss: nan\nEpoch 90, Loss: nan\nEpoch 0, Loss: 2.565e+15\nEpoch 10, Loss: 1.157e+128\nEpoch 20, Loss: 5.394e+240\nTraceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 35, in gradient_descent\n  File "<string>", line 15, in loss\n  File "<string>", line 15, in <genexpr>\nOverflowError: (34, \'Numerical result out of range\')\n', 'duration_seconds': 0.55, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': "Non-zero exit code: 1. Output: Epoch 0, Loss: 8.825e+115\nEpoch 10, Loss: nan\nEpoch 20, Loss: nan\nEpoch 30, Loss: nan\nEpoch 40, Loss: nan\nEpoch 50, Loss: nan\nEpoch 60, Loss: nan\nEpoch 70, Loss: nan\nEpoch 80, Loss: nan\nEpoch 90, Loss ... [exception: OverflowError: (34, 'Numerical result out of range')]"}
+
+=== Attempt 2 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 77.331, 'load_duration_seconds': 0.586, 'inference_duration_seconds': 76.744, 'prompt_tokens': 1068, 'completion_tokens': 465, 'total_tokens': 1533}
+--- CODE ---
+import random
+
+random.seed(42)
+
+# Data generation
+x = [i for i in range(100)]
+y = [2 * i + 3 for i in x]
+m_true, b_true = 2, 3
+
+def linear_regression(x, m, b):
+    return [m * xi + b for xi in x]
+
+def loss(y_pred, y):
+    return sum((yp - yi) ** 2 for yp, yi in zip(y_pred, y)) / len(y)
+
+def gradient_descent(x, y, m_init, b_init, lr, batch_size):
+    m = m_init
+    b = b_init
+    n = len(x)
+    for epoch in range(100):
+        indices = list(range(n))
+        random.shuffle(indices)
+        for i in range(0, n, batch_size):
+            batch_indices = indices[i:i + batch_size]
+            x_batch = [x[j] for j in batch_indices]
+            y_batch = [y[j] for j in batch_indices]
+            y_pred = linear_regression(x_batch, m, b)
+            dm = -2 * sum((yp - yi) * xi for xi, yp, yi in zip(x_batch, y_pred, y_batch)) / len(y_batch)
+            db = -2 * sum(yp - yi for yp, yi in zip(y_pred, y_batch)) / len(y_batch)
+            m -= lr * dm
+            b -= lr * db
+        if epoch % 10 == 0:
+            y_pred_all = linear_regression(x, m, b)
+            l = loss(y_pred_all, y)
+            if math.isnan(l) or math.isinf(l):
+                print(f"diverged at epoch {epoch}")
+                break
+            print(f"Epoch {epoch}, Loss: {l:.4g}")
+    return m, b
+
+# Training with small batch size
+m_small, b_small = gradient_descent(x, y, 0, 0, 0.1, 5)
+
+# Training with large batch size
+m_large, b_large = gradient_descent(x, y, 0, 0, 0.1, 50)
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 35, in gradient_descent\nNameError: name \'math\' is not defined\n', 'duration_seconds': 0.551, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 35, in gradient_descent\nNameError: name \'math\' is not defined'}
+
+=== Attempt 3 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 81.461, 'load_duration_seconds': 0.138, 'inference_duration_seconds': 81.323, 'prompt_tokens': 1027, 'completion_tokens': 468, 'total_tokens': 1495}
+--- CODE ---
+import random
+import math
+
+random.seed(42)
+
+# Data generation
+x = [i for i in range(100)]
+y = [2 * i + 3 for i in x]
+m_true, b_true = 2, 3
+
+def linear_regression(x, m, b):
+    return [m * xi + b for xi in x]
+
+def loss(y_pred, y):
+    return sum((yp - yi) ** 2 for yp, yi in zip(y_pred, y)) / len(y)
+
+def gradient_descent(x, y, m_init, b_init, lr, batch_size):
+    m = m_init
+    b = b_init
+    n = len(x)
+    for epoch in range(100):
+        indices = list(range(n))
+        random.shuffle(indices)
+        for i in range(0, n, batch_size):
+            batch_indices = indices[i:i + batch_size]
+            x_batch = [x[j] for j in batch_indices]
+            y_batch = [y[j] for j in batch_indices]
+            y_pred = linear_regression(x_batch, m, b)
+            dm = -2 * sum((yp - yi) * xi for xi, yp, yi in zip(x_batch, y_pred, y_batch)) / len(y_batch)
+            db = -2 * sum(yp - yi for yp, yi in zip(y_pred, y_batch)) / len(y_batch)
+            m -= lr * dm
+            b -= lr * db
+        if epoch % 10 == 0:
+            y_pred_all = linear_regression(x, m, b)
+            l = loss(y_pred_all, y)
+            if math.isnan(l) or math.isinf(l):
+                print(f"diverged at epoch {epoch}")
+                break
+            print(f"Epoch {epoch}, Loss: {l:.4g}")
+    return m, b
+
+# Training with small batch size
+m_small, b_small = gradient_descent(x, y, 0, 0, 0.1, 5)
+
+# Training with large batch size
+m_large, b_large = gradient_descent(x, y, 0, 0, 0.1, 50)
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Epoch 0, Loss: 8.825e+115\ndiverged at epoch 10\nEpoch 0, Loss: 2.464e+15\nEpoch 10, Loss: 1.129e+128\nEpoch 20, Loss: 4.93e+240\nTraceback (most recent call last):\n  File "<string>", line 46, in <module>\n  File "<string>", line 35, in gradient_descent\n  File "<string>", line 15, in loss\n  File "<string>", line 15, in <genexpr>\nOverflowError: (34, \'Numerical result out of range\')\n', 'duration_seconds': 0.549, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Epoch 0, Loss: 8.825e+115\ndiverged at epoch 10\nEpoch 0, Loss: 2.464e+15\nEpoch 10, Loss: 1.129e+128\nEpoch 20, Loss: 4.93e+240\nTraceback (most recent call last):\n  File "<string>", line 46, in <module>\n  File "<string>", line 35, in gradient_descent\n  File "<string>", line 15, in loss\n  File "<string>", line 15, in <genexpr>\nOverflowError: (34, \'Numerical result out of range\')'}
+
+--- CODER/SANDBOX RESULT ---
+Success: False, Attempts: 3
+
+--- ANALYST SKIPPED (Coder/sandbox did not succeed) ---
+
+--- CRITIC REASONING (for human review) ---
+  Attempt 1: Non-zero exit code: 1. Output: Epoch 0, Loss: 8.825e+115
+Epoch 10, Loss: nan
+Epoch 20, Loss: nan
+Epoch 30, Loss: nan
+Epoch 40, Loss: nan
+Epoch 50, Loss: nan
+Epoch 60, Loss: nan
+Epoch 70, Loss: nan
+Epoch 80, Loss: nan
+Epoch 90, Loss ... [exception: OverflowError: (34, 'Numerical result out of range')
+  Attempt 2: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 42, in <module>
+  File "<string>", line 35, in gradient_descent
+NameError: name 'math' is not defined
+  Attempt 3: Non-zero exit code: 1. Output: Epoch 0, Loss: 8.825e+115
+diverged at epoch 10
+Epoch 0, Loss: 2.464e+15
+Epoch 10, Loss: 1.129e+128
+Epoch 20, Loss: 4.93e+240
+Traceback (most recent call last):
+  File "<string>", line 46, in <module>
+  File "<string>", line 35, in gradient_descent
+  File "<string>", li
+
+======================================================================
+=== PLANTED QUESTION: epochs_always_improve_01 (training_dynamics) ===
+======================================================================
+Research question: Does increasing the number of training epochs always decrease final training loss, with no risk of overfitting or instability, on a simple linear regression task?
+Ground truth: refutes
+
+--- PLANNER OUTPUT ---
+Hypothesis: Increasing the number of training epochs always decreases final training loss, with no risk of overfitting or instability, on a simple linear regression task.
+Task description: Using only Python's standard library, simulate one epoch of stochastic gradient descent for linear regression on synthetic data once with a small number of epochs (5) and once with a large number of epochs (20). Calculate the mean squared error loss after each epoch and print it for both runs.
+Expected outcome: The run with fewer epochs should have a higher final loss than the run with more epochs.
+
+=== Attempt 1 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 64.132, 'load_duration_seconds': 0.111, 'inference_duration_seconds': 64.021, 'prompt_tokens': 471, 'completion_tokens': 458, 'total_tokens': 929}
+--- CODE ---
+import random
+import statistics
+
+random.seed(42)
+
+def generate_data(n_samples):
+    X = [[1] + [random.uniform(-1, 1) for _ in range(2)] for _ in range(n_samples)]
+    w_true = [random.uniform(-1, 1) for _ in range(3)]
+    y = [sum(x * w for x, w in zip(xi, w_true)) + random.gauss(0, 0.1) for xi in X]
+    return X, y
+
+def linear_regression(X, y):
+    n_samples, n_features = len(X), len(X[0])
+    weights = [random.uniform(-1, 1) for _ in range(n_features)]
+    learning_rate = 0.01
+    max_iterations = 10000
+
+    def predict(X, weights):
+        return [sum(xi * w for xi, w in zip(xi, weights)) for xi in X]
+
+    def mean_squared_error(y_true, y_pred):
+        return sum((y_i - y_p) ** 2 for y_i, y_p in zip(y_true, y_pred)) / len(y_true)
+
+    for epoch in range(5):
+        y_pred = predict(X, weights)
+        error = mean_squared_error(y, y_pred)
+        print(f"Epoch {epoch + 1} (small): {error:.4g}")
+        if error > 1e100:
+            print("diverged at step", epoch + 1)
+            break
+        gradient = [sum((y[i] - y_pred[i]) * xi[j] for i in range(n_samples)) / n_samples for j in range(n_features)]
+        weights = [w - learning_rate * g for w, g in zip(weights, gradient)]
+
+    for epoch in range(5, 20):
+        y_pred = predict(X, weights)
+        error = mean_squared_error(y, y_pred)
+        print(f"Epoch {epoch + 1} (large): {error:.4g}")
+        if error > 1e100:
+            print("diverged at step", epoch + 1)
+            break
+--- SANDBOX RESULT ---
+{'exit_code': 0, 'output': '', 'duration_seconds': 0.547, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Script ran successfully but produced no output at all.'}
+
+=== Attempt 2 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 75.353, 'load_duration_seconds': 0.127, 'inference_duration_seconds': 75.226, 'prompt_tokens': 989, 'completion_tokens': 472, 'total_tokens': 1461}
+--- CODE ---
+import random
+
+random.seed(42)
+
+def generate_data(n_samples):
+    X = [[1] + [random.uniform(-1, 1) for _ in range(2)] for _ in range(n_samples)]
+    w_true = [random.uniform(-1, 1) for _ in range(3)]
+    y = [sum(x * w for x, w in zip(xi, w_true)) + random.gauss(0, 0.1) for xi in X]
+    return X, y
+
+def linear_regression(X, y):
+    n_samples, n_features = len(X), len(X[0])
+    weights = [random.uniform(-1, 1) for _ in range(n_features)]
+    learning_rate = 0.01
+    max_iterations = 10000
+
+    def predict(X, weights):
+        return [sum(xi * w for xi, w in zip(xi, weights)) for xi in X]
+
+    def mean_squared_error(y_true, y_pred):
+        return sum((y_i - y_p) ** 2 for y_i, y_p in zip(y_true, y_pred)) / len(y_true)
+
+    for epoch in range(5):
+        y_pred = predict(X, weights)
+        error = mean_squared_error(y, y_pred)
+        print(f"Epoch {epoch + 1} (small): {error:.4g}")
+        if error > 1e100:
+            print("diverged at step", epoch + 1)
+            break
+        gradient = [sum((y[i] - y_pred[i]) * xi[j] for i in range(n_samples)) / n_samples for j in range(n_features)]
+        weights = [w - learning_rate * g for w, g in zip(weights, gradient)]
+
+    for epoch in range(5, 20):
+        y_pred = predict(X, weights)
+        error = mean_squared_error(y, y_pred)
+        print(f"Epoch {epoch + 1} (large): {error:.4g}")
+        if error > 1e100:
+            print("diverged at step", epoch + 1)
+            break
+
+X, y = generate_data(100)
+linear_regression(X, y)
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Epoch 1 (small): 2.142\nTraceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 30, in linear_regression\n  File "<string>", line 30, in <listcomp>\n  File "<string>", line 30, in <genexpr>\nNameError: name \'xi\' is not defined. Did you mean: \'i\'?\n', 'duration_seconds': 0.561, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Epoch 1 (small): 2.142\nTraceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 30, in linear_regression\n  File "<string>", line 30, in <listcomp>\n  File "<string>", line 30, in <genexpr>\nNameError: name \'xi\' is not defined. Did you mean: \'i\'?'}
+
+=== Attempt 3 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 75.647, 'load_duration_seconds': 0.131, 'inference_duration_seconds': 75.516, 'prompt_tokens': 1101, 'completion_tokens': 468, 'total_tokens': 1569}
+--- CODE ---
+import random
+
+random.seed(42)
+
+def generate_data(n_samples):
+    X = [[1] + [random.uniform(-1, 1) for _ in range(2)] for _ in range(n_samples)]
+    w_true = [random.uniform(-1, 1) for _ in range(3)]
+    y = [sum(x * w for x, w in zip(xi, w_true)) + random.gauss(0, 0.1) for xi in X]
+    return X, y
+
+def linear_regression(X, y):
+    n_samples, n_features = len(X), len(X[0])
+    weights = [random.uniform(-1, 1) for _ in range(n_features)]
+    learning_rate = 0.01
+    max_iterations = 10000
+
+    def predict(X, weights):
+        return [sum(xi * w for xi, w in zip(xi, weights)) for xi in X]
+
+    def mean_squared_error(y_true, y_pred):
+        return sum((y_i - y_p) ** 2 for y_i, y_p in zip(y_true, y_pred)) / len(y_true)
+
+    for epoch in range(5):
+        y_pred = predict(X, weights)
+        error = mean_squared_error(y, y_pred)
+        print(f"Epoch {epoch + 1} (small): {error:.4g}")
+        if error > 1e100:
+            print("diverged at step", epoch + 1)
+            break
+        gradient = [sum((y[i] - y_pred[i]) * xi[j] for i in range(n_samples)) / n_samples for j in range(n_features)]
+        weights = [w - learning_rate * g for w, g in zip(weights, gradient)]
+
+    for epoch in range(5, 20):
+        y_pred = predict(X, weights)
+        error = mean_squared_error(y, y_pred)
+        print(f"Epoch {epoch + 1} (large): {error:.4g}")
+        if error > 1e100:
+            print("diverged at step", epoch + 1)
+            break
+
+X, y = generate_data(100)
+linear_regression(X, y)
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 30, in linear_regression\n  File "<string>", line 30, in <listcomp>\n  File "<string>", line 30, in <genexpr>\nNameError: name \'xi\' is not defined. Did you mean: \'i\'?\nEpoch 1 (small): 2.142\n', 'duration_seconds': 0.594, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 42, in <module>\n  File "<string>", line 30, in linear_regression\n  File "<string>", line 30, in <listcomp>\n  File "<string>", line 30, in <genexpr>\nNameError: name \'xi\' is not defined. Did you mean: \'i\'?\nEpoch 1 (small): 2.142'}
+
+--- CODER/SANDBOX RESULT ---
+Success: False, Attempts: 3
+
+--- ANALYST SKIPPED (Coder/sandbox did not succeed) ---
+
+--- CRITIC REASONING (for human review) ---
+  Attempt 1: Script ran successfully but produced no output at all.
+  Attempt 2: Non-zero exit code: 1. Output: Epoch 1 (small): 2.142
+Traceback (most recent call last):
+  File "<string>", line 42, in <module>
+  File "<string>", line 30, in linear_regression
+  File "<string>", line 30, in <listcomp>
+  File "<string>", line 30, in <genexpr>
+NameError: name 'xi' is not defined. Di
+  Attempt 3: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 42, in <module>
+  File "<string>", line 30, in linear_regression
+  File "<string>", line 30, in <listcomp>
+  File "<string>", line 30, in <genexpr>
+NameError: name 'xi' is not defined. Did you mean: 'i'?
+Epoch 
+
+======================================================================
+=== PLANTED QUESTION: zero_init_symmetry_01 (weight_initialization) ===
+======================================================================
+Research question: Does initializing all weights to zero (instead of small random values) prevent a simple 2-layer neural network from learning effectively, due to symmetric gradients?
+Ground truth: supports
+
+--- PLANNER OUTPUT ---
+Hypothesis: Initializing all weights to zero instead of small random values prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.
+Task description: Simulate training for 10 epochs of a simple 2-layer neural network using synthetic data. Initialize the weights either to zero or with small random values. For each epoch, calculate and print the loss value on a single example.
+Expected outcome: The model initialized with all zeros should have poor learning performance, as it cannot differentiate between inputs due to symmetric gradients. The model initialized with small random values should learn effectively and show decreasing loss over epochs.
+
+=== Attempt 1 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 49.293, 'load_duration_seconds': 0.175, 'inference_duration_seconds': 49.118, 'prompt_tokens': 460, 'completion_tokens': 353, 'total_tokens': 813}
+--- CODE ---
+import random
+
+# Seed for reproducibility
+random.seed(42)
+
+# Define the neural network parameters
+input_size = 2
+output_size = 1
+learning_rate = 0.01
+
+# Initialize weights and biases to small random values
+weights = [[random.uniform(-0.1, 0.1) for _ in range(input_size)] for _ in range(output_size)]
+bias = [random.uniform(-0.1, 0.1) for _ in range(output_size)]
+
+# Define synthetic data (single example)
+inputs = [[1.0, 2.0]]
+targets = [[3.0]]
+
+# Training loop
+for epoch in range(10):
+    # Forward pass
+    z = sum(weights[i][j] * inputs[0][j] for j in range(input_size)) + bias[i]
+    prediction = max(0, z)  # Simple ReLU activation
+
+    # Calculate loss
+    loss = (prediction - targets[0][0]) ** 2
+
+    # Print loss
+    print(f"Epoch {epoch+1}: Loss: {loss:.4g}")
+
+    # Check for divergence
+    if loss > 1e100:
+        print('diverged at step', epoch)
+        break
+
+    # Backward pass (gradient descent)
+    for i in range(output_size):
+        d_loss = 2 * (prediction - targets[0][0])
+        dw = d_loss * inputs[0]
+        db = d_loss
+        weights[i] = [w - learning_rate * d for w, d in zip(weights[i], dw)]
+        bias[i] -= learning_rate * db
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 22, in <module>\n  File "<string>", line 22, in <genexpr>\nNameError: name \'i\' is not defined. Did you mean: \'id\'?\n', 'duration_seconds': 0.543, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 22, in <module>\n  File "<string>", line 22, in <genexpr>\nNameError: name \'i\' is not defined. Did you mean: \'id\'?'}
+
+=== Attempt 2 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 64.924, 'load_duration_seconds': 0.171, 'inference_duration_seconds': 64.753, 'prompt_tokens': 929, 'completion_tokens': 354, 'total_tokens': 1283}
+--- CODE ---
+import random
+
+# Seed for reproducibility
+random.seed(42)
+
+# Define the neural network parameters
+input_size = 2
+output_size = 1
+learning_rate = 0.01
+
+# Initialize weights and biases to small random values
+weights = [[random.uniform(-0.1, 0.1) for _ in range(input_size)] for _ in range(output_size)]
+bias = [random.uniform(-0.1, 0.1) for _ in range(output_size)]
+
+# Define synthetic data (single example)
+inputs = [[1.0, 2.0]]
+targets = [[3.0]]
+
+# Training loop
+for epoch in range(10):
+    # Forward pass
+    z = sum(weights[i][j] * inputs[0][j] for j in range(input_size)) + bias[0]
+    prediction = max(0, z)  # Simple ReLU activation
+
+    # Calculate loss
+    loss = (prediction - targets[0][0]) ** 2
+
+    # Print loss
+    print(f"Epoch {epoch+1}: Loss: {loss:.4g}")
+
+    # Check for divergence
+    if loss > 1e100:
+        print('diverged at step', epoch)
+        break
+
+    # Backward pass (gradient descent)
+    d_loss = 2 * (prediction - targets[0][0])
+    dw = [d_loss * inputs[0][j] for j in range(input_size)]
+    db = d_loss
+    weights[0] = [w - learning_rate * d for w, d in zip(weights[0], dw)]
+    bias[0] -= learning_rate * db
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 22, in <module>\n  File "<string>", line 22, in <genexpr>\nNameError: name \'i\' is not defined. Did you mean: \'id\'?\n', 'duration_seconds': 0.547, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 22, in <module>\n  File "<string>", line 22, in <genexpr>\nNameError: name \'i\' is not defined. Did you mean: \'id\'?'}
+
+=== Attempt 3 ===
+--- LLM COST (Coder) ---
+{'total_duration_seconds': 63.194, 'load_duration_seconds': 0.153, 'inference_duration_seconds': 63.041, 'prompt_tokens': 935, 'completion_tokens': 359, 'total_tokens': 1294}
+--- CODE ---
+import random
+
+# Seed for reproducibility
+random.seed(42)
+
+# Define the neural network parameters
+input_size = 2
+output_size = 1
+learning_rate = 0.01
+
+# Initialize weights and biases to small random values
+weights = [[random.uniform(-0.1, 0.1) for _ in range(input_size)] for _ in range(output_size)]
+bias = [random.uniform(-0.1, 0.1) for _ in range(output_size)]
+
+# Define synthetic data (single example)
+inputs = [[1.0, 2.0]]
+targets = [[3.0]]
+
+# Training loop
+for epoch in range(10):
+    # Forward pass
+    z = sum(weights[i][j] * inputs[0][j] for j in range(input_size)) + bias[0]
+    prediction = max(0, z)  # Simple ReLU activation
+
+    # Calculate loss
+    loss = (prediction - targets[0][0]) ** 2
+
+    # Print loss
+    print(f"Epoch {epoch+1}: Loss: {loss:.4g}")
+
+    # Check for divergence
+    if loss > 1e100:
+        print('diverged at step', epoch)
+        break
+
+    # Backward pass (gradient descent)
+    d_loss = 2 * (prediction - targets[0][0])
+    dw = [d_loss * inputs[0][j] for j in range(input_size)]
+    db = d_loss
+    weights[0] = [w - learning_rate * d for w, d in zip(weights[0], dw)]
+    bias[0] -= learning_rate * db
+--- SANDBOX RESULT ---
+{'exit_code': 1, 'output': 'Traceback (most recent call last):\n  File "<string>", line 22, in <module>\n  File "<string>", line 22, in <genexpr>\nNameError: name \'i\' is not defined. Did you mean: \'id\'?\n', 'duration_seconds': 0.566, 'killed_early_for_runaway': False, 'runaway_info': {'runaway': False}}
+--- CRITIC VERDICT ---
+{'passed': False, 'reason': 'Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File "<string>", line 22, in <module>\n  File "<string>", line 22, in <genexpr>\nNameError: name \'i\' is not defined. Did you mean: \'id\'?'}
+
+--- CODER/SANDBOX RESULT ---
+Success: False, Attempts: 3
+
+--- ANALYST SKIPPED (Coder/sandbox did not succeed) ---
+
+--- CRITIC REASONING (for human review) ---
+  Attempt 1: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 22, in <module>
+  File "<string>", line 22, in <genexpr>
+NameError: name 'i' is not defined. Did you mean: 'id'?
+  Attempt 2: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 22, in <module>
+  File "<string>", line 22, in <genexpr>
+NameError: name 'i' is not defined. Did you mean: 'id'?
+  Attempt 3: Non-zero exit code: 1. Output: Traceback (most recent call last):
+  File "<string>", line 22, in <module>
+  File "<string>", line 22, in <genexpr>
+NameError: name 'i' is not defined. Did you mean: 'id'?
+
+
+======================================================================
+=== BENCHMARK SUMMARY ===
+======================================================================
+lr_divergence_01 (learning_rate): coder_sandbox_valid=False, verdict=None, ground_truth=supports, match=N/A (sandbox failed)
+l2_weight_shrinkage_01 (regularization): coder_sandbox_valid=False, verdict=None, ground_truth=supports, match=N/A (sandbox failed)
+batch_size_gradient_variance_01 (batch_size): coder_sandbox_valid=False, verdict=None, ground_truth=supports, match=N/A (sandbox failed)
+epochs_always_improve_01 (training_dynamics): coder_sandbox_valid=False, verdict=None, ground_truth=refutes, match=N/A (sandbox failed)
+zero_init_symmetry_01 (weight_initialization): coder_sandbox_valid=False, verdict=None, ground_truth=supports, match=N/A (sandbox failed)
+
+Full results saved to benchmark/results_20261025T121757Z.json
+NEXT STEP: manually review planner_task_description and critic_history for each question, fill in planner_sound_human_judgment and critic_correct_human_judgment in the saved JSON.

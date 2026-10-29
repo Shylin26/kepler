@@ -1,0 +1,136 @@
+[
+  {
+    "id": "lr_divergence_01",
+    "mechanism": "learning_rate",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate 20 steps of stochastic gradient descent for a simple linear regression model with one feature. Generate synthetic data points and parameters. Choose a well-tuned learning rate and an extremely high (100x higher) learning rate. Print the value of the objective function at each step for both.",
+    "planner_hypothesis": "Using an extremely high learning rate (100x higher than a well-tuned value) causes SGD to diverge rather than converge when training a simple linear regression model on synthetic data.",
+    "coder_sandbox_valid": true,
+    "loop_success": true,
+    "final_sandbox_output": "Tuned Learning Rate:\nstep 1: loss 1.263e+09\nstep 2: loss 1.159e+14\nstep 3: loss 1.063e+19\nstep 4: loss 9.758e+23\nstep 5: loss 8.954e+28\nstep 6: loss 8.217e+33\nstep 7: loss 7.54e+38\nstep 8: loss 6.918e+43\nstep 9: loss 6.348e+48\nstep 10: loss 5.825e+53\nstep 11: loss 5.345e+58\nstep 12: loss 4.905e+63\nstep 13: loss 4.501e+68\nstep 14: loss 4.13e+73\nstep 15: loss 3.79e+78\nstep 16: loss 3.477e+83\nstep 17: loss 3.191e+88\nstep 18: loss 2.928e+93\nstep 19: loss 2.687e+98\ndiverged at step 20\n\nHigh Learning Rate:\ndiverged at step 1\n",
+    "attempts": 1,
+    "analyst_verdict": "supports",
+    "analyst_reasoning": "The high learning rate caused divergence at step 1, while the tuned learning rate converged smoothly towards a minimum. This aligns with the hypothesis that an extremely high learning rate causes SGD to diverge.",
+    "verdict_match": true,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task explicitly asks to handle the error gracefully when the learning rate is too high, which the code does by checking if the loss exceeds a certain threshold and breaking out of the loop."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "l2_weight_shrinkage_01",
+    "mechanism": "regularization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Using only Python's standard library, simulate one step of gradient descent for a linear regression model with and without L2 regularization. Print the weight values before and after the step for both conditions.",
+    "planner_hypothesis": "Adding L2 regularization reduces the magnitude of learned weights compared to training without regularization on a simple linear regression task.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Initial weight without regularization: 0.2789\n\nInitial weight with regularization: -0.95\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task asks to simulate one step of gradient descent with and without L2 regularization. The code provided does this correctly by updating the weights iteratively and handling potential divergence, but it avoids a guaranteed error condition that would occur if the learning rate were too large, leading to unbounded weight updates."
+      },
+      {
+        "attempt": 2,
+        "reason": "The code avoids the task by not performing one step of gradient descent as instructed. Instead, it prints the weight values without updating them."
+      },
+      {
+        "attempt": 3,
+        "reason": "The task does not specify handling an error condition that is guaranteed to occur. The code avoids the division by zero issue but does not handle the potential divergence of weights during gradient descent."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "batch_size_gradient_variance_01",
+    "mechanism": "batch_size",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate the training of a simple linear regression model on synthetic data using both small and large batch sizes. Measure and print the loss after each training iteration for both batch sizes.",
+    "planner_hypothesis": "Using a larger batch size reduces the variance of gradient estimates compared to a smaller batch size, leading to smoother loss curves.",
+    "coder_sandbox_valid": true,
+    "loop_success": true,
+    "final_sandbox_output": "Small batch size (1):\nstep 0: loss = 2.749\nstep 100: loss = 0.109\nstep 200: loss = 0.04017\nstep 300: loss = 0.01428\nstep 400: loss = 0.0112\nstep 500: loss = 0.0104\nstep 600: loss = 0.009763\nstep 700: loss = 0.009567\nstep 800: loss = 0.009455\nstep 900: loss = 0.009295\nstep 1000: loss = 0.009174\nstep 1100: loss = 0.009182\nstep 1200: loss = 0.009205\nstep 1300: loss = 0.00936\nstep 1400: loss = 0.009162\nstep 1500: loss = 0.009192\nstep 1600: loss = 0.009169\nstep 1700: loss = 0.009134\nstep 1800: loss = 0.009232\nstep 1900: loss = 0.009421\nstep 2000: loss = 0.009129\nstep 2100: loss = 0.009313\nstep 2200: loss = 0.009403\nstep 2300: loss = 0.009154\nstep 2400: loss = 0.009166\nstep 2500: loss = 0.009832\nstep 2600: loss = 0.009843\nstep 2700: loss = 0.009499\nstep 2800: loss = 0.009205\nstep 2900: loss = 0.009207\nstep 3000: loss = 0.009138\nstep 3100: loss = 0.009116\nstep 3200: loss = 0.009157\nstep 3300: loss = 0.009462\nstep 3400: loss = 0.009553\nstep 3500: loss = 0.009121\nstep 3600: loss = 0.00918\nstep 3700: loss = 0.009138\nstep 3800: loss = 0.009213\nstep 3900: loss = 0.009178\nstep 4000: loss = 0.009761\nstep 4100: loss = 0.009131\nstep 4200: loss = 0.009158\nstep 4300: loss = 0.009173\nstep 4400: loss = 0.009458\nstep 4500: loss = 0.009146\nstep 4600: loss = 0.009135\nstep 4700: loss = 0.009766\nstep 4800: loss = 0.009125\nstep 4900: loss = 0.009309\nstep 5000: loss = 0.009125\nstep 5100: loss = 0.009181\nstep 5200: loss = 0.009288\nstep 5300: loss = 0.00914\nstep 5400: loss = 0.009113\nstep 5500: loss = 0.00915\nstep 5600: loss = 0.009176\nstep 5700: loss = 0.009293\nstep 5800: loss = 0.009229\nstep 5900: loss = 0.009182\nstep 6000: loss = 0.009133\nstep 6100: loss = 0.009205\nstep 6200: loss = 0.009186\nstep 6300: loss = 0.009177\nstep 6400: loss = 0.009423\nstep 6500: loss = 0.00948\nstep 6600: loss = 0.009334\nstep 6700: loss = 0.009282\nstep 6800: loss = 0.01012\nstep 6900: loss = 0.009321\nstep 7000: loss = 0.009394\nstep 7100: loss = 0.009336\nstep 7200: loss = 0.009136\nstep 7300: loss = 0.00919\nstep 7400: loss = 0.009124\nstep 7500: loss = 0.009137\nstep 7600: loss = 0.009585\nstep 7700: loss = 0.009225\nstep 7800: loss = 0.009156\nstep 7900: loss = 0.009172\nstep 8000: loss = 0.009621\nstep 8100: loss = 0.009209\nstep 8200: loss = 0.009214\nstep 8300: loss = 0.009169\nstep 8400: loss = 0.009393\nstep 8500: loss = 0.009631\nstep 8600: loss = 0.0098\nstep 8700: loss = 0.009253\nstep 8800: loss = 0.01029\nstep 8900: loss = 0.009346\nstep 9000: loss = 0.009169\nstep 9100: loss = 0.009145\nstep 9200: loss = 0.009187\nstep 9300: loss = 0.009439\nstep 9400: loss = 0.009147\nstep 9500: loss = 0.00915\nstep 9600: loss = 0.00922\nstep 9700: loss = 0.009181\nstep 9800: loss = 0.009433\nstep 9900: loss = 0.009297\nstep 9999: loss = 0.009366\n\nLarge batch size (50):\nstep 0: loss = 3.251\nstep 100: loss = 0.5707\nstep 200: loss = 0.1568\nstep 300: loss = 0.04802\nstep 400: loss = 0.01947\nstep 500: loss = 0.01193\nstep 600: loss = 0.009919\nstep 700: loss = 0.009366\nstep 800: loss = 0.009209\nstep 900: loss = 0.009161\nstep 1000: loss = 0.009145\nstep 1100: loss = 0.009139\nstep 1200: loss = 0.009136\nstep 1300: loss = 0.009135\nstep 1400: loss = 0.009135\nstep 1500: loss = 0.009134\nstep 1600: loss = 0.009134\nstep 1700: loss = 0.009134\nstep 1800: loss = 0.009134\nstep 1900: loss = 0.009134\nstep 2000: loss = 0.009134\nstep 2100: loss = 0.009134\nstep 2200: loss = 0.009134\nstep 2300: loss = 0.009134\nstep 2400: loss = 0.009134\nstep 2500: loss = 0.009134\nstep 2600: loss = 0.009134\nstep 2700: loss = 0.009134\nstep 2800: loss = 0.009134\nstep 2900: loss = 0.009134\nstep 3000: loss = 0.009134\nstep 3100: loss = 0.009134\nstep 3200: loss = 0.009134\nstep 3300: loss = 0.009134\nstep 3400: loss = 0.009134\nstep 3500: loss = 0.009134\nstep 3600: loss = 0.009134\nstep 3700: loss = 0.009134\nstep 3800: loss = 0.009134\nstep 3900: loss = 0.009134\nstep 4000: loss = 0.009134\nstep 4100: loss = 0.009134\nstep 4200: loss = 0.009134\nstep 4300: loss = 0.009134\nstep 4400: loss = 0.009134\nstep 4500: loss = 0.009134\nstep 4600: loss = 0.009134\nstep 4700: loss = 0.009134\nstep 4800: loss = 0.009134\nstep 4900: loss = 0.009134\nstep 5000: loss = 0.009134\nstep 5100: loss = 0.009134\nstep 5200: loss = 0.009134\nstep 5300: loss = 0.009134\nstep 5400: loss = 0.009134\nstep 5500: loss = 0.009134\nstep 5600: loss = 0.009134\nstep 5700: loss = 0.009134\nstep 5800: loss = 0.009134\nstep 5900: loss = 0.009134\nstep 6000: loss = 0.009134\nstep 6100: loss = 0.009134\nstep 6200: loss = 0.009134\nstep 6300: loss = 0.009134\nstep 6400: loss = 0.009134\nstep 6500: loss = 0.009134\nstep 6600: loss = 0.009134\nstep 6700: loss = 0.009134\nstep 6800: loss = 0.009134\nstep 6900: loss = 0.009134\nstep 7000: loss = 0.009134\nstep 7100: loss = 0.009134\nstep 7200: loss = 0.009134\nstep 7300: loss = 0.009134\nstep 7400: loss = 0.009134\nstep 7500: loss = 0.009134\nstep 7600: loss = 0.009134\nstep 7700: loss = 0.009134\nstep 7800: loss = 0.009134\nstep 7900: loss = 0.009134\nstep 8000: loss = 0.009134\nstep 8100: loss = 0.009134\nstep 8200: loss = 0.009134\nstep 8300: loss = 0.009134\nstep 8400: loss =",
+    "attempts": 1,
+    "analyst_verdict": "inconclusive",
+    "analyst_reasoning": "The loss values for both the small batch size and the large batch size are nearly identical across all steps, with no clear indication of a smoother loss curve or reduced variance in the large batch size case.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "The task asks to simulate training of a simple linear regression model on synthetic data with both small and large batch sizes. The code correctly measures and prints the loss after each training iteration for both batch sizes."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "epochs_always_improve_01",
+    "mechanism": "training_dynamics",
+    "ground_truth_verdict": "refutes",
+    "planner_task_description": "Simulate one epoch of training for a simple linear regression model using synthetic data. Train the model with two different numbers of epochs (e.g., 10 and 50) using gradient descent. Print the final loss for each number of epochs.",
+    "planner_hypothesis": "Increasing the number of training epochs always decreases final training loss, with no risk of overfitting or instability, on a simple linear regression task.",
+    "coder_sandbox_valid": true,
+    "loop_success": true,
+    "final_sandbox_output": "Epoch 0: Loss = 71.39\nEpoch 10: Loss = 39.32\n\nFinal loss after 10 epochs: 39.27\nEpoch 0: Loss = 66.83\nEpoch 10: Loss = 39.22\nEpoch 20: Loss = 38.87\nEpoch 30: Loss = 38.58\nEpoch 40: Loss = 38.34\nEpoch 50: Loss = 38.15\n\nFinal loss after 50 epochs: 38.13\n",
+    "attempts": 3,
+    "analyst_verdict": "supports",
+    "analyst_reasoning": "The model trained for 50 epochs has a lower final loss (38.13) compared to the model trained for 10 epochs (39.27), which supports the hypothesis that increasing the number of training epochs always decreases final training loss.",
+    "verdict_match": false,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 32, in <module>\n  File \"<string>\", line 22, in gradient_descent\n  File \"<string>\", line 22, in <genexpr>\nNameError: name 'y_predi' is not defined. Did you mean: 'ypredi'?"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 32, in <module>\n  File \"<string>\", line 22, in gradient_descent\n  File \"<string>\", line 22, in <genexpr>\nNameError: name 'y_predi' is not defined. Did you mean: 'ypredi'?"
+      },
+      {
+        "attempt": 3,
+        "reason": "The task does not specify any guaranteed error condition that should be triggered and handled. The code runs without crashing and correctly simulates one epoch of training for a simple linear regression model using synthetic data."
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  },
+  {
+    "id": "zero_init_symmetry_01",
+    "mechanism": "weight_initialization",
+    "ground_truth_verdict": "supports",
+    "planner_task_description": "Simulate training a 2-layer neural network on synthetic data using both zero-initialized and small random-initialized weights. Train for 5 epochs with a fixed small learning rate and print the loss at each epoch for both weight initializations.",
+    "planner_hypothesis": "Initializing all weights to zero prevents a simple 2-layer neural network from learning effectively due to symmetric gradients.",
+    "coder_sandbox_valid": false,
+    "loop_success": false,
+    "final_sandbox_output": "Traceback (most recent call last):\n  File \"<string>\", line 64, in <module>\n  File \"<string>\", line 39, in train\n  File \"<string>\", line 13, in forward\n  File \"<string>\", line 13, in <listcomp>\n  File \"<string>\", line 13, in <genexpr>\nTypeError: can't multiply sequence by non-int of type 'float'\n",
+    "attempts": 3,
+    "analyst_verdict": null,
+    "analyst_reasoning": null,
+    "verdict_match": null,
+    "critic_history": [
+      {
+        "attempt": 1,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 53, in <module>\nNameError: name 'np' is not defined"
+      },
+      {
+        "attempt": 2,
+        "reason": "Non-zero exit code: 1. Output: SyntaxError: invalid syntax. Perhaps you forgot a comma? (line 20)"
+      },
+      {
+        "attempt": 3,
+        "reason": "Non-zero exit code: 1. Output: Traceback (most recent call last):\n  File \"<string>\", line 64, in <module>\n  File \"<string>\", line 39, in train\n  File \"<string>\", line 13, in forward\n  File \"<string>\", line 13, in <listcomp>\n  File \"<string>\", line 13, in <genexpr>\nTypeError: can't multiply sequence by non-int of type 'float'"
+      }
+    ],
+    "planner_sound_human_judgment": null,
+    "critic_correct_human_judgment": null
+  }
+]
